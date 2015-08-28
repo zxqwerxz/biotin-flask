@@ -1,4 +1,6 @@
-from flask import render_template, request
+import os, tempfile
+from flask import render_template, request, flash
+from werkzeug import secure_filename
 from biotin_flask import app
 import pysam
 
@@ -19,5 +21,10 @@ def sam_upload():
         seqname = request.form['seqname']
         start = int(request.form['range'].split('-')[0])
         end = int(request.form['range'].split('-')[1])
+        filename = secure_filename(file.filename)
+        file.save(os.path.join(tempfile.gettempdir(), filename))
         
-        samfile = pysam.AlignmentFile(file, "r")
+        samfile = pysam.AlignmentFile(os.path.join(tempfile.gettempdir(), filename), "r")
+        flash('Upload successful!')
+
+    return render_template('sam.html')
