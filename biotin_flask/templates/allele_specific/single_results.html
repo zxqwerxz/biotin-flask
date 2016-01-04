@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}Results | Biotin-Flask{% endblock %}
+
+{% block body %}
+    <table class="table table-bordered table-condensed">
+    	<thead><tr>{% for pos in sites %}<th>{{ pos }}</th>{% endfor %}</tr></thead><tbody>
+    	{% for row in rows %}
+    		<tr>{% for pos in row %}<td>{{ pos }}</td>{% endfor %}</tr>
+    	{% endfor %}
+    </tbody></table>
+{% endblock %}

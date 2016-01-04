@@ -32,7 +32,7 @@
                         <span class="icon-bar"></span>
                         <span class="icon-bar"></span>
                     </button>
-                    <a class="navbar-brand topnav" href="#">biotin • flask</a>
+                    <a class="navbar-brand topnav" href="{{ url_for('index') }}">biotin • flask</a>
                 </div>
                 <!-- Collect the nav links, forms, and other content for toggling -->
                 <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
@@ -41,7 +41,7 @@
                             <a href="#services">Fasta Analysis</a>
                         </li>
                         <li>
-                            <a href="#services">Samfile Analysis</a>
+                            <a href="{{ url_for('sam') }}">Samfile Analysis</a>
                         </li>
                     </ul>
                     <ul class="nav navbar-nav navbar-right">
