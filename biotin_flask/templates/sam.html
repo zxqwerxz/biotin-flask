@@ -9,22 +9,14 @@
 
 <!-- Project One -->
 <div class="row">
-    <div class="col-md-10 col-md-offset-1">
-        <h3>Single Samfile Analysis</h3>
-        <p>Clonal reads analysis of a single samfile or bamfile.</p>
-        <a class="btn btn-primary" href="{{ url_for('clonal_single') }}">Select This</a>
+    <div class="col-md-2 ">
+        <i class="fa fa-cubes" style="display:block;text-align:center;font-size:8em;margin-top:20px;"></i>
     </div>
-</div>
-<!-- /.row -->
-
-<hr>
-
-<!-- Project One -->
-<div class="row">
-    <div class="col-md-10 col-md-offset-1">
-        <h3>Multiple Samfile Analysis</h3>
-        <p>Clonal reads analysis of multiple samfiles (.zip).</p>
-        <a class="btn btn-primary" href="{{ url_for('clonal_multiple') }}">Select This</a>
+    <div class="col-md-8">
+        <h3>Samfile Pileup Viewer</h3>
+        <p>Visualize each site within a single amplicon region by clonal read. Designed for manual CpG/SNP calling or QC purposes.</p>
+        <p>Accepts SAM/.zip input and outputs html/csv(.zip).</p>
+        <a class="btn btn-primary" href="{{ url_for('pileup') }}">Select This</a>
     </div>
 </div>
 <!-- /.row -->
