@@ -6,7 +6,8 @@ Web Interface for Tools for DNA methylation analysis, developed in Flask.
 Installation Instructions
 -------------------------
 
-Virtualenvs do not work with the biotin server -- this is because the default server and mod_wsgi is UCS2 python, but
-the virtualenv installation is UCS4. It just won't work.
+Note that the configuration file is biotin_flask/__init__.py
 
-Currently I am using 
+Please configure this file before deploying. 
+
+wsgi.py is not being used right now.
