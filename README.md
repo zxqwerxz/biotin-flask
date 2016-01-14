@@ -14,7 +14,9 @@ Please configure this file before deploying.
 
 To install this, copy the .conf file to /etc/apache2/sites-available
 
-Makes sure that the logs folder exists
+Make sure that the logs folder exists
+
+Make sure the wsgi.py file is executable
 
 Additionally, you must set up a virtualenv
 
