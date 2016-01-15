@@ -1,6 +1,6 @@
 import os, pysam
 from unittest import TestCase
-from biotin_flask.models.pysam import get_indel, ref2querypos
+from biotin_flask.models.pysam_ext import get_indel, ref2querypos
 
 class Test_Get_Indel(TestCase):
     def setUp(self):

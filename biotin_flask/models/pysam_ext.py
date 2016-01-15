@@ -99,3 +99,10 @@ def get_refbase(aligned_segment, reference_position):
     Return None if the reference_position is out of range.
     Return "-" if there is no base at the given reference_position
     """
+    # Parse reference positions that are out of range first
+    if reference_position < aligned_segment.reference_start or reference_position >= aligned_segment.reference_end:
+        return ""
+    pos = ref2querypos(aligned_segment, reference_position)
+    if pos is not None:
+        return aligned_segment.query_sequence[pos]
+    return "-"
