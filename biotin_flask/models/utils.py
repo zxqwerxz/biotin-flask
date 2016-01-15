@@ -55,6 +55,8 @@ class SamUpload:
             flash('Invalid SAM file: ' + filename, 'error')
 
     def __del__(self):
+        for file in self.bamfiles:
+            file.close()
         for file in self.filelist:
             os.remove(file)
             print 'deleted file: ' + file

@@ -41,3 +41,61 @@ def get_indel(aligned_segment, query_position):
     if previous_was_match and query_position <= sum:
         return 0
     return IndexError("Query Position %r is out of bounds.")
+
+def query2refpos(aligned_segment, query_position):
+    """
+    Returns the reference position at the given query position (0-based).
+    Insertions are returned as decimals, for instance:
+    152.01 - First insertion after base 152
+    152.02 - Second insertion after base 152
+    """
+    pass
+
+def ref2querypos(aligned_segment, reference_position):
+    """
+    Returns the reference position at the given query position (0-based).
+    My convention for insertions are decimals, for instance:
+    152.01 - First insertion after ref base 152
+    152.02 - Second insertion after ref base 152
+    Return None if there is no base at the given reference position
+    """
+    # Parse reference positions that are out of range first
+    if reference_position < aligned_segment.reference_start or reference_position >= aligned_segment.reference_end:
+        return None
+
+    # Reference position is in range
+    delta_ref = reference_position - aligned_segment.reference_start
+    query_pos = 0
+    for tuple in aligned_segment.cigartuples:
+        type = tuple[0]
+        length = tuple[1]
+        if type == 0: # Match
+            if delta_ref - (length - 1) <= 0:
+                # Need to determine if decimal
+                if delta_ref - int(delta_ref) == 0:
+                    return query_pos + delta_ref
+                else:
+                    return None
+            delta_ref = delta_ref - (length - 1)
+            query_pos = query_pos + length
+        elif type == 1: # Insertion
+            # Site of interest is only an insertion if delta is a decimal less than 1 but greater than 0
+            if delta_ref < 1:
+                if round(delta_ref / 0.01, 2) > length:
+                    return None
+                return int(query_pos - 1 + round(delta_ref / 0.01, 0))
+            delta_ref = delta_ref - 1
+            query_pos = query_pos + length
+        elif type == 2: # Deletion
+            if delta_ref - length < 0:
+                return None
+            delta_ref = delta_ref - length - 1
+        else:
+            raise ValueError("This is not an acceptable CIGAR string: %r" % aligned_segment.cigarstring)
+
+def get_refbase(aligned_segment, reference_position):
+    """
+    Returns the base at the given reference position (0-based).
+    Return None if the reference_position is out of range.
+    Return "-" if there is no base at the given reference_position
+    """

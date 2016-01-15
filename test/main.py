@@ -1,6 +1,6 @@
 import os, pysam, sys
 sys.path.insert(0, "/Users/jeffrey/src/flask/biotin-flask/")
-from biotin_flask.models.pysam import get_indel
+from biotin_flask.models.pysam import get_indel, ref2querypos
 
 dir = os.path.dirname(__file__)
 filename = os.path.join(dir, 'files/sample.sam')
@@ -25,8 +25,9 @@ for pileup_column in samfile.pileup(region="IL4:5879-5880"):
             count = count + 1
         if read is not None and read.alignment.query_name == r.alignment.query_name:
             if not r.is_del:
-                print str(r.indel) + " " + str(get_indel(r.alignment, r.query_position)) + " " + str(r.query_position)
+                print str(r.query_position) + " " + str(ref2querypos(r.alignment, pileup_column.reference_pos)) + " " + str(pileup_column.reference_pos)
 print read.alignment.cigarstring
+print ref2querypos(read.alignment, 5959.01)
 
 """
 read_dict['RB40W:00428:02640'] = []
