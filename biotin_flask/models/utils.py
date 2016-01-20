@@ -60,3 +60,14 @@ class SamUpload:
         for file in self.filelist:
             os.remove(file)
             print 'deleted file: ' + file
+
+class WriteZip:
+    """Class for handling any group of files that needs to be written to .zip as a response."""
+
+    def __init__(self, file_h, filename):
+        self.filelist = [] # Need to clean this up afterwards
+
+    def __del__(self):
+        for file in self.filelist:
+            os.remove(file)
+            print 'deleted file: ' + file

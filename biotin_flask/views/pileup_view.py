@@ -1,7 +1,6 @@
-import os, tempfile, pysam
+import os, tempfile
 from flask import render_template, request, flash
 from werkzeug import secure_filename
-from collections import OrderedDict
 
 from biotin_flask import app
 from biotin_flask.models.utils import SamUpload
@@ -42,40 +41,50 @@ def pileup():
     # Now load samfile
     bam = SamUpload(sam_upload, secure_filename(sam_upload.filename))
 
-    # Later need to incorporate a loop
-    samfile = bam.bamfiles[0]
+    # Begin loop
+    for samfile in bam.bamfiles:
 
-    # Get reference positions list
-    ref_list = []
-    for col in samfile.pileup(region=region, truncate=TRUNCATE):
-        if FILTER:
-            if col.reference_pos in fasta_ids:
+        # Get reference positions list
+        ref_list = []
+        for col in samfile.pileup(region=region, truncate=TRUNCATE):
+            if FILTER:
+                if col.reference_pos in fasta_ids:
+                    ref_list.append(col.reference_pos)
+            else:
                 ref_list.append(col.reference_pos)
-        else:
-            ref_list.append(col.reference_pos)
-            if SHOWINDEL:
-                maxindel = 0
-                for read in col.pileups:
-                    if read.indel > maxindel:
-                        maxindel = read.indel
-                for z in xrange(maxindel):
-                    ref_list.append(col.reference_pos + 0.01 * (z + 1))
+                if SHOWINDEL:
+                    maxindel = 0
+                    for read in col.pileups:
+                        if read.indel > maxindel:
+                            maxindel = read.indel
+                    for z in xrange(maxindel):
+                        ref_list.append(col.reference_pos + 0.01 * (z + 1))
 
-    # Use a dictionary of lists to hold the bases and reads
-    rows = []
-    for read in samfile.fetch(region=region):
-        base_list = []
-        base_list.append(read.query_name)
-        for pos in ref_list:
-            base_list.append(get_refbase(read, pos))
-        rows.append(base_list)
+        # Use a list of lists to hold the bases and reads
+        rows = []
+        for read in samfile.fetch(region=region):
+            base_list = []
+            base_list.append(read.query_name)
+            for pos in ref_list:
+                base_list.append(get_refbase(read, pos))
+            rows.append(base_list)
+        new_list = []
+        new_list.insert(0, "")
+        for num in ref_list:
+            if float(num).is_integer():
+                new_list.append(num)
+            else:
+                new_list.append("-")
 
-    # Print results
-    new_list = []
-    new_list.insert(0, "")
-    for num in ref_list:
-        if float(num).is_integer():
-            new_list.append(num)
+        # If there is only a single file, return an HTML page
+        if len(bam.bamfiles) == 1:
+            return render_template('pileup/results.html', rows=rows, sites=new_list)
         else:
-            new_list.append("-")
-    return render_template('pileup/results.html', rows=rows, sites=new_list)
+            # Save a temporary csv
+            csvname = filename.rsplit('.', 1)[0] + '.csv'
+            with open(os.path.join(tempfile.gettempdir(), csvname), 'wb') as csvfile:
+                w = csv.writer(csvfile, delimiter=',', quotechar='|', quoting=csv.QUOTE_MINIMAL)
+                w.writerow(ids_list)
+                for row in rows:
+                    w.writerow(row)
+                csvnames.append(csvname)
