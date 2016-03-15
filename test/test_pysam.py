@@ -27,6 +27,7 @@ class ParseSamfile(TestCase):
         #pysam.sort(filename, "output")
         #pysam.index("output.bam")
         #samfile = pysam.AlignmentFile("output.bam", "rb")
+        pass
 
     def tearDown(self):
         self.samfile.close()
