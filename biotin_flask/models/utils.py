@@ -1,4 +1,5 @@
 import os, tempfile, zipfile, pysam
+from io import BytesIO
 from flask import flash
 
 class SamUpload:
@@ -14,6 +15,7 @@ class SamUpload:
             file_h.save(os.path.join(tempfile.gettempdir(), filename))
             self.filelist.append(os.path.join(tempfile.gettempdir(), filename))
             print 'saved file: ' + filename
+            print 'now extracting: ' + filename
 
             # Extract the zipfile
             with zipfile.ZipFile(os.path.join(tempfile.gettempdir(), filename), "r") as z:
@@ -21,11 +23,10 @@ class SamUpload:
                 for file in z.namelist():
                     self.filelist.append(os.path.join(tempfile.gettempdir(), file))
                     filefront, extension = os.path.splitext(file)
-                    if extension != '.sam':
-                        continue
-                    self.__loadsamfile(file, filefront)
+                    if extension == '.sam' and filefront[0] != "_":
+                        self.__loadsamfile(file, filefront)
 
-        if extension == '.sam':
+        elif extension == '.sam':
             # Save the zipfile
             file_h.save(os.path.join(tempfile.gettempdir(), filename))
             self.filelist.append(os.path.join(tempfile.gettempdir(), filename))
@@ -64,8 +65,21 @@ class SamUpload:
 class WriteZip:
     """Class for handling any group of files that needs to be written to .zip as a response."""
 
-    def __init__(self, file_h, filename):
+    def __init__(self, filename):
         self.filelist = [] # Need to clean this up afterwards
+        self.filename = filename
+
+    def add_file(self, filename):
+        self.filelist.append(filename)
+
+    def send_zipfile(self):
+        memory_file = BytesIO()
+        with zipfile.ZipFile(memory_file, 'w') as zf:
+            files = self.filelist
+            for file in files:
+                zf.write(os.path.join(tempfile.gettempdir(), file), file)
+        memory_file.seek(0)
+        return memory_file
 
     def __del__(self):
         for file in self.filelist:

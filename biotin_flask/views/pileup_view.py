@@ -1,9 +1,9 @@
-import os, tempfile
-from flask import render_template, request, flash
+import os, tempfile, csv
+from flask import render_template, request, flash, send_file
 from werkzeug import secure_filename
 
 from biotin_flask import app
-from biotin_flask.models.utils import SamUpload
+from biotin_flask.models.utils import SamUpload, WriteZip
 from biotin_flask.models.pysam_ext import get_refbase
 
 @app.route('/sam/pileup', methods=['GET', 'POST'])
@@ -17,22 +17,20 @@ def pileup():
     region = request.form.get('region').encode('ascii', 'ignore')
     ids = request.form.get('ids')
     sam_upload = request.files['sam']
-    fasta_upload = request.files['fasta']
-    SHOWINDEL = SHOWCALC = False
-    FILTER = TRUNCATE = FASTA = True
+    SHOWINDEL = False
+    FILTER = TRUNCATE = True
     for option in request.form.getlist('options'):
         if option == 'ShowIndel': SHOWINDEL = True
         if option == 'ShowExt': TRUNCATE = False
-        if option == 'ShowCalc': SHOWCALC = True
     if not region or not sam_upload:
         flash('A reqired field is missing', 'error')
         return render_template('pileup/form.html')
     if not ids: FILTER = False
-    if not fasta_upload: FASTA = False
     fasta_ids = None
     if FILTER:
         try:
             fasta_ids = map(int, ids.splitlines())
+            fasta_ids = [x - 1 for x in fasta_ids]
             fasta_ids.sort()
         except:
             flash('Error in the FASTID(s) provided. Place one integer on each line with no extraneous lines.', 'error')
@@ -40,6 +38,7 @@ def pileup():
 
     # Now load samfile
     bam = SamUpload(sam_upload, secure_filename(sam_upload.filename))
+    zip_writer = WriteZip('results_' + sam_upload.filename)
 
     # Begin loop
     for samfile in bam.bamfiles:
@@ -72,7 +71,7 @@ def pileup():
         new_list.insert(0, "")
         for num in ref_list:
             if float(num).is_integer():
-                new_list.append(num)
+                new_list.append(num + 1)
             else:
                 new_list.append("-")
 
@@ -81,10 +80,14 @@ def pileup():
             return render_template('pileup/results.html', rows=rows, sites=new_list)
         else:
             # Save a temporary csv
-            csvname = filename.rsplit('.', 1)[0] + '.csv'
+            csvname = os.path.splitext(os.path.split(samfile.filename)[1])[0] + '.csv'
             with open(os.path.join(tempfile.gettempdir(), csvname), 'wb') as csvfile:
                 w = csv.writer(csvfile, delimiter=',', quotechar='|', quoting=csv.QUOTE_MINIMAL)
-                w.writerow(ids_list)
+                w.writerow(new_list)
                 for row in rows:
                     w.writerow(row)
-                csvnames.append(csvname)
+            zip_writer.add_file(csvname)
+
+    # Send zipfile if applicable
+    return send_file(zip_writer.send_zipfile(), attachment_filename=zip_writer.filename, as_attachment=True)
+

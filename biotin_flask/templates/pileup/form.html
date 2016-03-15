@@ -17,7 +17,9 @@
     <h1>Samfile Pileup Viewer</h1>
 
     <ul style="font-style: italic">
-        <li>Instructions for how to use this software will go here.</li>
+        <li>Version 1.02 (05-15-201)</li>
+        <li>Providing a .sam file will output the results on an HTML page.</li>
+        <li>Providing a .zip file of multiple SAM files will output the results as an archive of .csv files.</li>
     </ul>
     <hr>
     <form role="form" action="{{ url_for('pileup') }}" method="post" enctype="multipart/form-data">
@@ -43,18 +45,10 @@
             <div class="checkbox">
                 <label><input name="options" type="checkbox" value="ShowExt">Show the full sequence of all reads overlapping the target region</label>
             </div>
-            <div class="checkbox disabled">
-                <label><input name="options" type="checkbox" value="ShowCalc">Show methylation/SNP statistics</label>
-            </div>
         </div>
 
         <div class="form-group">
-			<label for="fasta">FASTA file (optional):</label>
-			<input class="form-control" type="file" name="fasta">
-	    </div>
-
-        <div class="form-group">
-			<label for="ids">Fasta ID filter (optional):</label>
+			<label for="ids">Fasta ID coordinate filter (optional):</label>
 			<textarea class="form-control" name="ids" rows="10" placeholder="one ID per line only, no commas or extra lines"></textarea>
 	    </div>
 
