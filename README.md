@@ -28,3 +28,10 @@ Additionally, you must set up a virtualenv
 Then, a2dissite whatever is active, and a2ensite biotin-flask.
 
 Sudo service apache2 restart
+
+For Heroku
+----------
+
+Use default heroku installation instructions.
+
+The Procfile is for Heroku purposes.
