@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Samfile Analysis| Biotin-Flask{% endblock %}
+
+{% block body %}
+<ol class="breadcrumb">
+  <li><a href="{{ url_for('index') }}">Home</a></li>
+  <li class="active">Miscellaneous</li>
+</ol>
+
+<!-- Project One -->
+<div class="row">
+    <div class="col-md-2 ">
+        <i class="fa fa-cubes" style="display:block;text-align:center;font-size:8em;margin-top:20px;"></i>
+    </div>
+    <div class="col-md-8">
+        <h3>Partek Variant Calling Transposer</h3>
+        <p>Transposes the output of the Partek Variant Caller into a table by sample/position.</p>
+        <p>Accepts .csv input and outputs .csv.</p>
+        <a class="btn btn-primary" href="{{ url_for('partek_transpose') }}">Select This</a>
+    </div>
+</div>
+<!-- /.row -->
+
+<hr>
+{% endblock %}
