@@ -17,7 +17,7 @@
     <h1>Samfile Pileup Viewer</h1>
 
     <ul style="font-style: italic">
-        <li>Version 1.02 (05-15-201)</li>
+        <li>Version 1.03 (03-16-2016)</li>
         <li>Providing a .sam file will output the results on an HTML page.</li>
         <li>Providing a .zip file of multiple SAM files will output the results as an archive of .csv files.</li>
     </ul>
@@ -39,6 +39,9 @@
 
         <h3>Optional Parameters:</h3>
         <div class="form-group">
+            <div class="checkbox">
+                <label><input name="options" type="checkbox" value="PrintCsv">Output as .csv file</label>
+            </div>
             <div class="checkbox">
                 <label><input name="options" type="checkbox" value="ShowIndel">Show insertions in the reference sequence</label>
             </div>

@@ -10,3 +10,7 @@ def index():
 @app.route('/sam/')
 def sam():
     return render_template('sam.html')
+
+@app.route('/misc/')
+def misc():
+    return render_template('misc.html')

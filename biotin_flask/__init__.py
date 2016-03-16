@@ -9,3 +9,4 @@ app.secret_key = 'Big Secret!'
 
 import biotin_flask.views.application
 import biotin_flask.views.pileup_view
+import biotin_flask.views.partek_transpose_view
