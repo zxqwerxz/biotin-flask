@@ -1,5 +1,5 @@
-import os, tempfile, csv
-from flask import render_template, request, flash, send_file
+import os, tempfile, csv, StringIO
+from flask import render_template, request, flash, send_file, make_response
 from werkzeug import secure_filename
 
 from biotin_flask import app
@@ -17,11 +17,12 @@ def pileup():
     region = request.form.get('region').encode('ascii', 'ignore')
     ids = request.form.get('ids')
     sam_upload = request.files['sam']
-    SHOWINDEL = False
+    SHOWINDEL = PRINTCSV = False
     FILTER = TRUNCATE = True
     for option in request.form.getlist('options'):
         if option == 'ShowIndel': SHOWINDEL = True
         if option == 'ShowExt': TRUNCATE = False
+        if option == 'PrintCsv': PRINTCSV = True
     if not region or not sam_upload:
         flash('A reqired field is missing', 'error')
         return render_template('pileup/form.html')
@@ -35,6 +36,9 @@ def pileup():
         except:
             flash('Error in the FASTID(s) provided. Place one integer on each line with no extraneous lines.', 'error')
             return render_template('pileup/form.html')
+    if ("-" not in region) or (":" not in region):
+        flash('Invalid amplicon region provided.', 'error')
+        return render_template('pileup/form.html')
 
     # Now load samfile
     bam = SamUpload(sam_upload, secure_filename(sam_upload.filename))
@@ -45,19 +49,23 @@ def pileup():
 
         # Get reference positions list
         ref_list = []
-        for col in samfile.pileup(region=region, truncate=TRUNCATE):
-            if FILTER:
-                if col.reference_pos in fasta_ids:
+        try:
+            for col in samfile.pileup(region=region, truncate=TRUNCATE):
+                if FILTER:
+                    if col.reference_pos in fasta_ids:
+                        ref_list.append(col.reference_pos)
+                else:
                     ref_list.append(col.reference_pos)
-            else:
-                ref_list.append(col.reference_pos)
-                if SHOWINDEL:
-                    maxindel = 0
-                    for read in col.pileups:
-                        if read.indel > maxindel:
-                            maxindel = read.indel
-                    for z in xrange(maxindel):
-                        ref_list.append(col.reference_pos + 0.01 * (z + 1))
+                    if SHOWINDEL:
+                        maxindel = 0
+                        for read in col.pileups:
+                            if read.indel > maxindel:
+                                maxindel = read.indel
+                        for z in xrange(maxindel):
+                            ref_list.append(col.reference_pos + 0.01 * (z + 1))
+        except ValueError:
+            flash(region + ': Amplicon region gene/chromosome name not found in the SAM file, or invalid coordinate range.', 'error')
+            return render_template('pileup/form.html')
 
         # Use a list of lists to hold the bases and reads
         rows = []
@@ -75,9 +83,31 @@ def pileup():
             else:
                 new_list.append("-")
 
-        # If there is only a single file, return an HTML page
+        # If there is only a single file, return an HTML page or print a single csv file
         if len(bam.bamfiles) == 1:
-            return render_template('pileup/results.html', rows=rows, sites=new_list)
+
+            if PRINTCSV:
+
+                # Prepare csv printer
+                dest = StringIO.StringIO()
+                writer = csv.writer(dest)
+
+                # Print rows
+                writer.writerow(new_list)
+                for row in rows:
+                    writer.writerow(row)
+
+                # Make response
+                response = make_response(dest.getvalue())
+                csvname = os.path.splitext(os.path.split(samfile.filename)[1])[0] + '.csv'
+                response.headers["Content-Disposition"] = "attachment; filename=results_" + csvname
+                return response
+
+            else:
+
+                # Print HTML file
+                return render_template('pileup/results.html', rows=rows, sites=new_list)
+
         else:
             # Save a temporary csv
             csvname = os.path.splitext(os.path.split(samfile.filename)[1])[0] + '.csv'
