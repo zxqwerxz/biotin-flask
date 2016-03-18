@@ -3,7 +3,8 @@
 
 {% block body %}
     <table class="table table-bordered table-condensed text-center">
-    	<thead><tr>{% for pos in sites %}<th>{{ pos }}</th>{% endfor %}</tr></thead><tbody>
+        <thead>{% if genomic %}<tr bgcolor="#ffa07a">{% for gen in genomic %}<td>{{ gen }}</td>{% endfor %}</tr>{% endif %}
+    	<tr>{% for pos in sites %}<th>{{ pos }}</th>{% endfor %}</tr></thead><tbody>
     	{% for row in rows %}
     		<tr>{% for pos in row %}<td>{{ pos }}</td>{% endfor %}</tr>
     	{% endfor %}

@@ -2,6 +2,22 @@ import os, tempfile, zipfile, pysam
 from io import BytesIO
 from flask import flash
 
+class FastaUpload:
+    """Class for handling any FASTA-like file upload."""
+
+    @staticmethod
+    def extract_seq(file_h, seqname):
+        """Method for extracting the genomic sequence of a certain seqname/gene in the fasta file"""
+        found_it = False
+        for line in file_h.readlines():
+            line = line.rstrip()
+            if line == '>' + seqname:
+                found_it = True
+                continue
+            if found_it:
+                return line
+        return None
+
 class SamUpload:
     """Class for handling any SAM-like file upload. Automatically converts to an indexed BAMfile."""
 
