@@ -3,7 +3,7 @@ from flask import render_template, request, flash, send_file, make_response
 from werkzeug import secure_filename
 
 from biotin_flask import app
-from biotin_flask.models.utils import SamUpload, WriteZip
+from biotin_flask.models.utils import SamUpload, WriteZip, FastaUpload
 from biotin_flask.models.pysam_ext import get_refbase
 
 @app.route('/sam/pileup', methods=['GET', 'POST'])
@@ -17,7 +17,8 @@ def pileup():
     region = request.form.get('region').encode('ascii', 'ignore')
     ids = request.form.get('ids')
     sam_upload = request.files['sam']
-    SHOWINDEL = PRINTCSV = False
+    fasta_upload = request.files['fasta']
+    SHOWINDEL = PRINTCSV = FASTA = False
     FILTER = TRUNCATE = True
     for option in request.form.getlist('options'):
         if option == 'ShowIndel': SHOWINDEL = True
@@ -39,6 +40,10 @@ def pileup():
     if ("-" not in region) or (":" not in region):
         flash('Invalid amplicon region provided.', 'error')
         return render_template('pileup/form.html')
+    genomic_seq = None
+    if fasta_upload:
+        FASTA = True
+        genomic_seq = FastaUpload.extract_seq(fasta_upload, region.split(":")[0])
 
     # Now load samfile
     bam = SamUpload(sam_upload, secure_filename(sam_upload.filename))
@@ -75,13 +80,26 @@ def pileup():
             for pos in ref_list:
                 base_list.append(get_refbase(read, pos))
             rows.append(base_list)
+
+        # Make list of FASTA IDs
         new_list = []
-        new_list.insert(0, "")
+        new_list.insert(0, "FASTA ID:")
         for num in ref_list:
             if float(num).is_integer():
                 new_list.append(num + 1)
             else:
                 new_list.append("-")
+
+        # Make genomic sequence header if applicable
+        gen_list = []
+        gen_list.insert(0, "Genomic")
+        if FASTA:
+            for i in new_list[1:]:
+                try:
+                    num = int(i)
+                    gen_list.append(genomic_seq[num - 1])
+                except:
+                    gen_list.append("-")
 
         # If there is only a single file, return an HTML page or print a single csv file
         if len(bam.bamfiles) == 1:
@@ -93,6 +111,7 @@ def pileup():
                 writer = csv.writer(dest)
 
                 # Print rows
+                if FASTA: writer.writerow(gen_list)
                 writer.writerow(new_list)
                 for row in rows:
                     writer.writerow(row)
@@ -106,6 +125,8 @@ def pileup():
             else:
 
                 # Print HTML file
+                if FASTA:
+                    return render_template('pileup/results.html', rows=rows, sites=new_list, genomic=gen_list)
                 return render_template('pileup/results.html', rows=rows, sites=new_list)
 
         else:
@@ -113,6 +134,7 @@ def pileup():
             csvname = os.path.splitext(os.path.split(samfile.filename)[1])[0] + '.csv'
             with open(os.path.join(tempfile.gettempdir(), csvname), 'wb') as csvfile:
                 w = csv.writer(csvfile, delimiter=',', quotechar='|', quoting=csv.QUOTE_MINIMAL)
+                if FASTA: w.writerow(gen_list)
                 w.writerow(new_list)
                 for row in rows:
                     w.writerow(row)
