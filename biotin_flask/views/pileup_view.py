@@ -76,6 +76,10 @@ def pileup():
         rows = []
         for read in samfile.fetch(region=region):
             base_list = []
+            if read.is_reverse:
+                base_list.append("-")
+            else:
+                base_list.append("+")
             base_list.append(read.query_name)
             for pos in ref_list:
                 base_list.append(get_refbase(read, pos))
@@ -84,6 +88,7 @@ def pileup():
         # Make list of FASTA IDs
         new_list = []
         new_list.insert(0, "FASTA ID:")
+        new_list.insert(0, "(+/-)")
         for num in ref_list:
             if float(num).is_integer():
                 new_list.append(num + 1)
@@ -92,9 +97,10 @@ def pileup():
 
         # Make genomic sequence header if applicable
         gen_list = []
-        gen_list.insert(0, "Genomic")
+        gen_list.insert(0, region.split(":")[0])
+        gen_list.insert(0, "")
         if FASTA:
-            for i in new_list[1:]:
+            for i in new_list[2:]:
                 try:
                     num = int(i)
                     gen_list.append(genomic_seq[num - 1])
