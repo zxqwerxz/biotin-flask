@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}Samfile Analysis| Biotin-Flask{% endblock %}
+{% block title %}Miscellaneous| Biotin-Flask{% endblock %}
 
 {% block body %}
 <ol class="breadcrumb">
@@ -17,6 +17,20 @@
         <p>Transposes the output of the Partek Variant Caller into a table by sample/position.</p>
         <p>Accepts .csv input and outputs .csv.</p>
         <a class="btn btn-primary" href="{{ url_for('partek_transpose') }}">Select This</a>
+    </div>
+</div>
+<!-- /.row -->
+
+<!-- Project Two -->
+<div class="row">
+    <div class="col-md-2 ">
+        <i class="fa fa-table" style="display:block;text-align:center;font-size:8em;margin-top:20px;"></i>
+    </div>
+    <div class="col-md-8">
+        <h3>PSQ Assay Design File to CSV File</h3>
+        <p>Takes in PSQ Assay Design html files and reformats into one csv file</p>
+        <p>Accepts .html input and outputs .csv.</p>
+        <a class="btn btn-primary" href="{{ url_for('psq') }}">Select This</a>
     </div>
 </div>
 <!-- /.row -->

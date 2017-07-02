@@ -6,7 +6,7 @@
 <!-- Breadcrumb Trail-->
 <ol class="breadcrumb">
   <li><a href="{{ url_for('index') }}">Home</a></li>
-    <li><a href="{{ url_for('sam') }}">Miscellaneous</a></li>
+    <li><a href="{{ url_for('misc') }}">Miscellaneous</a></li>
   <li class="active">Partek Variant Calling Transposer</li>
 </ol>
 <!-- End Breadcrumbs -->
@@ -24,10 +24,10 @@
     </ul>
     <hr>
     <form role="form" action="{{ url_for('partek_transpose') }}" method="post" enctype="multipart/form-data">
-        <h3>Required Paramters:</h3>
+        <h3>Required Parameters:</h3>
 
         <div class="form-group">
-			<label for="sam">.csv File:</label> <span style="color:red;">*required</span>
+			<label>.csv File:</label> <span style="color:red;">*required</span>
 			<input class="form-control" type="file" name="csv">
 	    </div>
 
