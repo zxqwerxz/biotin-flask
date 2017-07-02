@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}PSQ Assay Design File to CSV File | Biotin-Flask{% endblock %}
+
+{% block body %}
+
+<!-- Breadcrumb Trail-->
+<ol class="breadcrumb">
+    <li><a href="{{ url_for('index') }}">Home</a></li>
+    <li><a href="{{ url_for('misc') }}">Miscellaneous</a></li>
+    <li class="active">PSQ Assay Design File to CSV File</li>
+</ol>
+<!-- End Breadcrumbs -->
+
+<div class="row">
+    <div class="col-lg-12">
+
+        <h1>PSQ Assay Design File to CSV File</h1>
+
+        <ul style="font-style: italic">
+            <li>Version 0.01 (07-01-2017)</li>
+            <li>Takes PSQ Assay Design 'View Report' .html files and outputs a csv file with the appropriate formatting</li>
+        </ul>
+        <hr>
+        <form role="form" action="{{ url_for('psq') }}" method="post" enctype="multipart/form-data">
+            <h3>Required Parameters:</h3>
+
+            <div class="form-group">
+                <label>.html File:</label> <span style="color:red;">*required</span>
+                <input class="form-control" type="file" name="html" multiple>
+                <p style="margin-top:10px;">Try selecting multiple .html files to upload</p>
+                <p style="font-size:70%">Note: This form is not compatible with Internet Explorer 9 and earlier versions</p>
+            </div>
+
+            <hr>
+
+            <button class="btn btn-default btn-lg" type="submit">Submit</button>
+        </form>
+    </div>
+</div>
+{% endblock %}
