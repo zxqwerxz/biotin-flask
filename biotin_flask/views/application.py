@@ -1,16 +1,38 @@
+# -*- coding: utf-8 -*-
+"""Home page URL routes for the biotin-flask application.
+
+This module contains the routes for the home page of the app. All of the views
+contained within this module are for static HTML pages only.
+
+If you are making a view with dynamic or complicated logic, please make a
+new python module within this directory and import it in:
+biotin_flask/__init__.py
+
+"""
+
 from flask import render_template
 from biotin_flask import app
 
-# Go to biotin_flask/__init__.py for application configuration
+__author__ = 'Jeffrey Zhou'
+__copyright__ = 'Copyright (C) 2017, EpigenDx Inc.'
+__credits__ = ['Jeffrey Zhou']
+__version__ = '0.0.1'
+__status__ = 'Production'
+
 
 @app.route('/')
 def index():
+    """Render the home page."""
     return render_template('index.html')
-    
+
+
 @app.route('/sam/')
 def sam():
+    """Render the landing page for SAM file analysis."""
     return render_template('sam.html')
+
 
 @app.route('/misc/')
 def misc():
+    """Render the landing page for miscellaneous analysis."""
     return render_template('misc.html')

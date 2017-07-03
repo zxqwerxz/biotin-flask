@@ -84,8 +84,8 @@ def partek_transpose():
     writer = csv.writer(dest)
 
     # Print header
-    writer.writerow( ["", "Position"] + pos_list)
-    writer.writerow( ["Sample ID", "reference base"] + ref_list)
+    writer.writerow(["", "Position"] + pos_list)
+    writer.writerow(["Sample ID", "reference base"] + ref_list)
 
     # Loop through Samples
     for sample_id, sample_data in sorted(samples.items()):
