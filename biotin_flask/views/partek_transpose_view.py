@@ -37,17 +37,17 @@ def partek_transpose():
     filename = secure_filename(f.filename)
     if not f:
         flash('A reqired field is missing', 'error')
-        return render_template('pileup/form.html')
+        return render_template('partek_transpose/form.html')
     filefront, extension = os.path.splitext(filename)
     if not extension == '.csv':
         flash('Only .csv files are allowed.', 'error')
-        return render_template('pileup/form.html')
+        return render_template('partek_transpose/form.html')
     try:
         stream = io.StringIO(f.stream.read().decode("UTF8"), newline=None)
         csv_reader = csv.reader(stream)
     except:
         flash('Unable to read csv file.', 'error')
-        return render_template('pileup/form.html')
+        return render_template('partek_transpose/form.html')
 
     # Begin main processing loop
     pos_list = []

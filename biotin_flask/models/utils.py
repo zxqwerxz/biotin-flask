@@ -1,4 +1,5 @@
 import os, tempfile, zipfile, pysam
+from HTMLParser import HTMLParser
 from io import BytesIO
 from flask import flash
 
@@ -101,3 +102,16 @@ class WriteZip:
         for file in self.filelist:
             os.remove(file)
             print 'deleted file: ' + file
+
+class ParsePsy(HTMLParser):
+    """Class for turning the html file in a list of strings"""
+
+    def __init__(self):
+        # Pass down parent class HTMLParser
+        HTMLParser.__init__(self)
+        # Initialize data to be extracted from HTML file
+        self.data = []
+
+    def handle_data(self,data):
+        if data.strip():
+            self.data.append(data.replace('\r\n ', ''))
