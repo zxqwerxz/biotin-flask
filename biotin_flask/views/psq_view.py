@@ -39,7 +39,7 @@ def psq():
         return render_template('psq/form.html')
 
     # Otherwise validate the form on a POST request and process uploaded files
-    f = request.files.getlist("html")
+    f = request.files.getlist('html')
 
     if not f[0]:
         flash('A reqired field is missing', 'error')
@@ -57,7 +57,7 @@ def psq():
     # Begin cleaning and parsing the html file
     clean = []
     output = []
-    p = ParsePsy()
+    p = ParsePsy() # ParsePsy is a class Eric wrote in utils.py that parses the html file
     for index, file in enumerate(f):
         # Convert file into string
         html = ''
