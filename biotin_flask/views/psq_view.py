@@ -152,18 +152,21 @@ def psq():
         row[5] = file[15]
         row[6] = file[14]
         row[7] = file[1]
+        row[12] = file[0] + 'FP'
         row[13] = file[2]
         writer.writerow( row )
         row = [""] * 17
         row[2] = file[7]
         row[3] = file[8]
         row[4] = file[9]
+        row[12] = file[0] + 'RP'
         row[13] = file[6]
         writer.writerow(row)
         row = [""] * 17
         row[2] = file[11]
         row[3] = file[12]
         row[4] = file[13]
+        row[12] = file[0] + 'S'
         row[13] = file[10]
         writer.writerow(row)
         row = [""] * 17
