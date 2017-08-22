@@ -46,13 +46,23 @@ def psq():
         return render_template('psq/form.html')
 
     # Throw error if any file does not have .html extension
-    filefront, extension, filename = '', '', ''
+    seq_primer = ''
     for file in f:
         filename = secure_filename(file.filename)
         filefront, extension = os.path.splitext(filename)
         if not extension == '.html':
             flash('Only .html files are allowed.', 'error')
             return render_template('psq/form.html')
+
+        # Check if 'FS' or 'RS' is in the file name
+        if filefront[-3:-1] == 'FS':
+            seq_primer = 'FS'
+        elif filefront[-3:-1] == 'RS':
+            seq_primer = 'RS'
+        elif filefront[-2:] == 'FS':
+            seq_primer = 'FS'
+        elif filefront[-2:] == 'RS':
+            seq_primer = 'RS'
 
     # Begin cleaning and parsing the html file
     clean = []
@@ -152,18 +162,21 @@ def psq():
         row[5] = file[15]
         row[6] = file[14]
         row[7] = file[1]
+        row[12] = file[0] + 'FP'
         row[13] = file[2]
         writer.writerow( row )
         row = [""] * 17
         row[2] = file[7]
         row[3] = file[8]
         row[4] = file[9]
+        row[12] = file[0] + 'RP'
         row[13] = file[6]
         writer.writerow(row)
         row = [""] * 17
         row[2] = file[11]
         row[3] = file[12]
         row[4] = file[13]
+        row[12] = file[0] + seq_primer
         row[13] = file[10]
         writer.writerow(row)
         row = [""] * 17
