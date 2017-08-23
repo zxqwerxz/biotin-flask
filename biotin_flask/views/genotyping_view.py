@@ -247,6 +247,9 @@ def genotyping():
             output_sheet.cell(row=end_row, column=1).font = Font(bold=True)
             for column in range(1, 23):  # There are 22 columns, including the Genotyping column
                 output_sheet.cell(row=1, column=column).font = Font(bold=True)
+            # Because I'm really lazy, I'm adding this after the fact
+            output_sheet = wedge_column_right(output_sheet, 'I', 'V')
+
 
         # Delete the first sheet of the output file
         output.remove_sheet(output.active)
