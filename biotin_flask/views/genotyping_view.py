@@ -193,11 +193,16 @@ def genotyping():
             file_processed = file_wb.create_sheet('processed')
 
             # Copy first row to the new sheet
-            for column in range(1, 24): # There are 22 columns, including the Genotyping column
+            for column in range(1, 23): # There are 22 columns, including the Genotyping column
                 file_processed.cell(row=1, column=column).value = file_ws.cell(row=1, column=column).value
+            file_processed['V1'].value = 'Genotyping'
+            file_processed['W1'].value = 'Manual Call' # Empty column
+            file_processed['X1'].value = 'Average Coverage'
+
 
             # Sort rows into the new processed sheet
             sort_row = 1
+            total_coverage = 0
             for snp in range(1, len(snp_id) + 1):
                 for row in range(2, file_ws.max_row + 1):
                     if file_ws['W{}'.format(row)].value == snp:
@@ -206,6 +211,10 @@ def genotyping():
                         for column in range(1, 23): # This does not include the index column, column 23
                             file_processed.cell(row=sort_row, column=column).value = file_ws.cell(row=row,
                                                                                                   column=column).value
+                        total_coverage += file_ws['M{}'.format(row)].value
+
+            # Add an average coverage column
+            file_processed['X2'].value = total_coverage/(sort_row - 1)
 
             # Make a thick border below the sort_row
             sort_row += 1 # Skip a row
@@ -232,20 +241,25 @@ def genotyping():
                         for column in range(1, 23):
                             file_processed.cell(row=sort_row, column=column).value = file_ws.cell(row=row,
                                                                                                   column=column).value
+
             # Create a new worksheet in output
             output_sheet = output.create_sheet('Variant_Calls_' + file_processed['T2'].value)
 
+            # Because I'm really lazy, I'm adding this after the fact (This could be a lot more efficient)
+            del_cols = ['S','R','Q','P','O','N','L','K','J']
+            for col in del_cols:
+                delete_column(file_processed,col)
+
             # Copy the processed worksheet into output
             for row in range(1, file_processed.max_row + 1):
-                for column in range(1, file_processed.max_column): # not including the last emptied column
+                for column in range(1, 16): # There are 15 columns
                     output_sheet.cell(row=row, column=column).value = file_processed.cell(row=row, column=column).value
                     output_sheet.cell(row=row, column=column).alignment = Alignment(horizontal='center')
 
             # Add the finishing formatting touches
-            output_sheet['V1'].value = 'Genotyping'
             output_sheet.cell(row=end_row, column=1).value = 'Extra SNPs'
             output_sheet.cell(row=end_row, column=1).font = Font(bold=True)
-            for column in range(1, 23):  # There are 22 columns, including the Genotyping column
+            for column in range(1, 16):  # There are 15 columns
                 output_sheet.cell(row=1, column=column).font = Font(bold=True)
 
         # Delete the first sheet of the output file
