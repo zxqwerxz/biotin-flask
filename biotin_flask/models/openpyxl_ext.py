@@ -2,7 +2,8 @@ import csv
 import os
 from openpyxl import Workbook
 
-from openpyxl.utils import column_index_from_string
+from openpyxl.utils import column_index_from_string, coordinate_from_string
+from openpyxl.styles import Border, Side
 
 
 def delete_column(ws, delete_column):
@@ -27,6 +28,29 @@ def delete_column(ws, delete_column):
             ws.cell(row=row, column=column).value = ws.cell(row=row, column=column+1).value
 
     return ws
+
+
+def delete_row(ws, delete_row):
+    """
+    This method empties a specified row from the worksheet. However,
+    it still preserves the number of row (ie. it doesn't actually
+    delete any row, but it empties one of the rows)
+
+    Copied and modified from delete_column
+
+    :param ws:                  (Object) Worksheet (not Workbook)
+    :param delete_column:       (Integer) Row Number
+    :return:                    (Object) Worksheet
+    """
+
+    assert delete_row >= 1, 'Column numbers must be 1 or greater'
+
+    for row in range(delete_row, ws.max_row + 1):
+        for column in range(1, ws.max_column + 1):
+            ws.cell(row=row, column=column).value = ws.cell(row=row+1, column=column).value
+
+    return ws
+
 
 def wedge_column_right(ws, right, *wedge):
     """
@@ -80,6 +104,7 @@ def wedge_column_right(ws, right, *wedge):
 
     return ws
 
+
 def csv_to_xlsx(csv_filepath):
     """
     This method converts csv files to .xlsx files because openpyxl can't
@@ -115,4 +140,47 @@ def csv_to_xlsx(csv_filepath):
     csv_filepath = csv_filepath + 'x'
     xlsx.save(csv_filepath)
 
+def surround_border(ws, top_left, bottom_right):
+    """
+    This method surrounds the range with a thin border because openpyxl
+    can't apply a style to a range of cells.
+    This only works for a range of cells whose width is greater than 1
+    and height is greater than 1 :(
 
+    :param ws:                      (Object) Worksheet
+    :param top_left:                (String) Cell location ie 'A1'
+    :param bottom_right:            (String) Cell location ie 'A1'
+    :return:                        (Object) Worksheet
+    """
+
+    top_left = list(coordinate_from_string(top_left))
+    bottom_right = list(coordinate_from_string(bottom_right))
+    top_left[0] = column_index_from_string(top_left[0])
+    bottom_right[0] = column_index_from_string(bottom_right[0])
+
+    for column in range(top_left[0], bottom_right[0] + 1):
+        for row in range(top_left[1], bottom_right[1] + 1):
+            if column == top_left[0]:
+                ws.cell(row=row, column=column).border = Border(left=Side(border_style='thin'))
+            if column == bottom_right[0]:
+                ws.cell(row=row, column=column).border = Border(right=Side(border_style='thin'))
+            if row == top_left[1]:
+                ws.cell(row=row, column=column).border = Border(top=Side(border_style='thin'))
+            if row == bottom_right[1]:
+                ws.cell(row=row, column=column).border = Border(bottom=Side(border_style='thin'))
+
+            # the four corners
+            if column == top_left[0] and row == top_left[1]:
+                ws.cell(row=row, column=column).border = Border(left=Side(border_style='thin'),
+                                                                top=Side(border_style='thin'))
+            if column == top_left[0] and row == bottom_right[1]:
+                ws.cell(row=row, column=column).border = Border(left=Side(border_style='thin'),
+                                                                bottom=Side(border_style='thin'))
+            if column == bottom_right[0] and row == bottom_right[1]:
+                ws.cell(row=row, column=column).border = Border(right=Side(border_style='thin'),
+                                                                bottom=Side(border_style='thin'))
+            if column == bottom_right[0] and row == top_left[1]:
+                ws.cell(row=row, column=column).border = Border(right=Side(border_style='thin'),
+                                                                top=Side(border_style='thin'))
+
+    return ws
