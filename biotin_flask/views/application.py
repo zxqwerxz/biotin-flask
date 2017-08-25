@@ -13,12 +13,17 @@ biotin_flask/__init__.py
 from flask import render_template
 from biotin_flask import app
 
+import logging, sys
+
 __author__ = 'Jeffrey Zhou'
 __copyright__ = 'Copyright (C) 2017, EpigenDx Inc.'
 __credits__ = ['Jeffrey Zhou']
 __version__ = '0.0.1'
 __status__ = 'Production'
 
+
+app.logger.addHandler(logging.StreamHandler(sys.stdout))
+app.logger.setLevel(logging.ERROR)
 
 @app.route('/')
 def index():
