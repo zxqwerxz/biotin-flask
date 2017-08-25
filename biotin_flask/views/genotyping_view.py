@@ -384,8 +384,7 @@ def genotyping():
             if not os.path.basename(out_path) in os.listdir(os.path.join(app.config['UPLOAD_FOLDER'], 'genotyping_results')):
                 flash('The file was not saved to out_path')
                 delete_files(f)
-            else:
-                flash('The file was saved to out_path')
+                return render_template('genotyping/form.html', ref_exists=ref_exists, filenames=filenames)
 
             # Write the file to a zip file
             zipf.write(out_path, 'genotyping_results/' + os.path.basename(out_path))
