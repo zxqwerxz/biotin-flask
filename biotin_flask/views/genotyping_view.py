@@ -373,11 +373,11 @@ def genotyping():
             output.remove_sheet(output.active)
 
             # Save the output file
-            filename = date.today().strftime('%m%d%y') + '_' + output_sheet['K2'].value
+            filename = date.today().strftime('%m%d%y') + '_' + output_sheet['K2'].value.replace(" ", "_")
             if customer_id == '':
                 filename += '_Results.xlsx'
             else:
-                filename += '_' + customer_id + '_Results.xlsx'
+                filename += '_' + customer_id.replace(" ", "_") + '_Results.xlsx'
             out_path = os.path.join(app.config['UPLOAD_FOLDER'], 'genotyping_results', filename)
             output.save(out_path)
 
