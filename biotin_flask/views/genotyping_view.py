@@ -373,8 +373,7 @@ def genotyping():
             output.remove_sheet(output.active)
 
             # Save the output file
-            # filename = date.today().strftime('%m%d%y') + '_' + output_sheet['K2'].value.replace(" ", "_")
-            filename = output_sheet['K2'].value.replace(" ", "_")
+            filename = date.today().strftime('%m%d%y') + '_' + output_sheet['K2'].value.replace(" ", "_")
             if customer_id == '':
                 filename += '_Results.xlsx'
             else:
@@ -391,7 +390,8 @@ def genotyping():
             flash('The server was not cleaned of generated results files', 'error')
             return render_template('genotyping/form.html', ref_exists=ref_exists, filenames=filenames)
         for filename in os.listdir(os.path.join(app.config['UPLOAD_FOLDER'], 'genotyping_results')):
-            os.remove(os.path.join(app.config['UPLOAD_FOLDER'], 'genotyping_results', filename))
+            if not filename == '.gitignore':
+                os.remove(os.path.join(app.config['UPLOAD_FOLDER'], 'genotyping_results', filename))
 
     # Delete files from server
     delete_files(f)
