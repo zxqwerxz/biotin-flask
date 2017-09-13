@@ -30,7 +30,7 @@
             and sample <a href="{{ url_for('static', filename='img/genotyping_output_format.png') }}">output format</a>.
             <ul style="font-size:70%">
                 <li>
-                    The variant call .xls data files must have the following 50 field names:
+                    The variant call .xls or .xlsx data files must have the following 50 field names:
                     'Chrom', 'Position', 'Ref', 'Variant', 'Allele Call', 'Filter', 'Frequency', 'Quality', 'Filter',
                     'Type', 'Allele Source', 'Allele Name', 'Gene ID', 'Region Name', 'VCF Position',
                     'VCF Ref', 'VCF Variant', 'Original Coverage', 'Coverage', 'Filter', 'Coverage+',
@@ -48,7 +48,7 @@
         <h3>Required Parameters:</h3>
 
         <div class="form-group">
-			<label>variant calls (.xls files):</label> <span style="color:red;">*required</span>
+			<label>variant calls (.xls or .xlsx files):</label> <span style="color:red;">*required</span>
 			<input class="form-control" type="file" name="input" multiple>
             <p style="margin-top:10px;">Try selecting multiple .xls files to upload</p>
             <p style="font-size:70%">Note: The multiple select feature is not compatible with Internet Explorer 9 and earlier versions</p>
