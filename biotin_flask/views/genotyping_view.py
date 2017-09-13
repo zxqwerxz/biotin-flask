@@ -380,6 +380,7 @@ def genotyping():
                 filename += '_' + customer_id.replace(" ", "_") + '_Results.xlsx'
             out_path = os.path.join(app.config['UPLOAD_FOLDER'], 'genotyping_results', filename)
             output.save(out_path)
+            print(out_path)
 
             # Write the file to a zip file
             zipf.write(out_path, 'genotyping_results/' + os.path.basename(out_path))
