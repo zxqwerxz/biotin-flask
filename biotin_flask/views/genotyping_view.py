@@ -64,16 +64,17 @@ def genotyping():
     for file in f:
         filename = secure_filename(file.filename)
         filefront, extension = os.path.splitext(filename)
-        if not extension == '.xls':
-            flash('Only .xls files are allowed.', 'error')
+        if not extension == '.xls' and not extension =='.xlsx':
+            flash('Only .xls and .xlsx files are allowed.', 'error')
             return render_template('genotyping/form.html', ref_exists=ref_exists, filenames=filenames)
         path = os.path.join(app.config['UPLOAD_FOLDER'], secure_filename(file.filename))
         file.save(path)
 
         # Convert the files in f to xlsx so that openpyxl can work with them
-        csv_to_xlsx(path)
-        extension = '.xlsx'
-        file.filename = filefront + extension
+        if extension == '.xls':
+            csv_to_xlsx(path)
+            extension = '.xlsx'
+            file.filename = filefront + extension
 
     # try:
     # Throw error if more than one snp list was provided
