@@ -69,78 +69,82 @@ def psq():
     output = []
     p = ParsePsy() # ParsePsy is a class Eric wrote in utils.py that parses the html file
     for index, file in enumerate(f):
-        # Convert file into string
-        html = ''
-        for line in file:
-            html = html + line
+        try:
+            # Convert file into string
+            html = ''
+            for line in file:
+                html = html + line
 
-        # Let ParsePsy() clean the html
-        p.feed(html)
-        clean.append(p.data)
-        # Reset ParsePsy()
-        p.data = []
-        p.close()
+            # Let ParsePsy() clean the html
+            p.feed(html)
+            clean.append(p.data)
+            # Reset ParsePsy()
+            p.data = []
+            p.close()
 
-        # Begin parsing for data
-        data = []
-        counter = 0
-        neighbor = 0
+            # Begin parsing for data
+            data = []
+            counter = 0
+            neighbor = 0
 
-        for item in clean[index]:
-            if neighbor > 0:
-                data.append(item)
-                neighbor -= 1
-                continue
+            for item in clean[index]:
+                if neighbor > 0:
+                    data.append(item)
+                    neighbor -= 1
+                    continue
 
-            if counter == 0:
-                # Look for Assay Name
-                if item.replace(' ', '') == 'AssayName':
-                    neighbor = 1
-                    counter += 1
+                if counter == 0:
+                    # Look for Assay Name
+                    if item.replace(' ', '') == 'AssayName':
+                        neighbor = 1
+                        counter += 1
 
-            elif counter == 1:
-                # Look for Score:
-                if item.split()[0] == 'Score:':
-                    data.append(item.split()[1])
-                    counter += 1
+                elif counter == 1:
+                    # Look for Score:
+                    if item.split()[0] == 'Score:':
+                        data.append(item.split()[1])
+                        counter += 1
 
-            elif counter == 2:
-                # Look for F1 Primer
-                if item == 'F1':
-                    neighbor = 4
-                    counter += 1
+                elif counter == 2:
+                    # Look for F1 Primer
+                    if item == 'F1':
+                        neighbor = 4
+                        counter += 1
 
-            elif counter == 3:
-                # Look for R1 Primer
-                if item == 'R1':
-                    neighbor = 4
-                    counter+=1
+                elif counter == 3:
+                    # Look for R1 Primer
+                    if item == 'R1':
+                        neighbor = 4
+                        counter+=1
 
-            elif counter == 4:
-                # Look for S1 Primer
-                if item == 'S1':
-                    neighbor = 4
-                    counter += 1
+                elif counter == 4:
+                    # Look for S1 Primer
+                    if item == 'S1':
+                        neighbor = 4
+                        counter += 1
 
-            elif counter == 5:
-                # Look for Amplicon Length
-                if item.replace(' ', '') == 'Ampliconlength':
-                    neighbor = 1
-                    counter += 1
+                elif counter == 5:
+                    # Look for Amplicon Length
+                    if item.replace(' ', '') == 'Ampliconlength':
+                        neighbor = 1
+                        counter += 1
 
-            elif counter == 6:
-                # Look for Amplicon %GC
-                if item.replace(' ', '') == 'Amplicon\r\n%GC':
-                    neighbor = 1
-                    counter += 1
+                elif counter == 6:
+                    # Look for Amplicon %GC
+                    if item.replace(' ', '') == 'Amplicon\r\n%GC':
+                        neighbor = 1
+                        counter += 1
 
-            elif counter == 7:
-                break
+                elif counter == 7:
+                    break
 
-        if len(data) != 16:
-            flash('The uploaded file(s) are not in the correct format', 'error')
+            if len(data) != 16:
+                flash('The uploaded file(s) are not in the correct format', 'error')
+                return render_template('psq/form.html')
+            output.append(data)
+        except:
+            flash('There was an error while reading file ' + secure_filename(file.filename), 'error')
             return render_template('psq/form.html')
-        output.append(data)
 
     # Prepare csv printer
     dest = StringIO.StringIO()
