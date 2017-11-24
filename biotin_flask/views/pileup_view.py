@@ -1,4 +1,25 @@
-import os, tempfile, csv, StringIO
+# -*- coding: utf-8 -*-
+"""Visualize each read within a SAM file at the given coordinates.
+
+This module is a simple wrapper around the Pysam package that allows for
+selected nucleotide positions of a SAM file to visualized on an HTML page.
+
+Either a single SAM file or multiple SAM files within a .zip folder can be
+provided. If a single SAM file is provided, the results are printed on the HTML
+page. If multiple files are provided, the results are returned as a zipped csv.
+
+Several options are available:
+    ShowIndel   Show aligner insertions and deletions on the printed output.
+    ShowExt     Show nucleotide positions on reads extending outside of the
+                bounds of the specified coordinates.
+    PrintCsv    Print the results as a CSV file instead of HTML.
+"""
+
+import os
+import csv
+import tempfile
+import StringIO
+
 from flask import render_template, request, flash, send_file, make_response
 from werkzeug import secure_filename
 
@@ -6,9 +27,28 @@ from biotin_flask import app
 from biotin_flask.models.utils import SamUpload, WriteZip, FastaUpload
 from biotin_flask.models.pysam_ext import get_refbase
 
+__author__ = 'Jeffrey Zhou'
+__copyright__ = 'Copyright (C) 2017, EpigenDx Inc.'
+__credits__ = ['Jeffrey Zhou']
+__version__ = '0.0.1'
+__status__ = 'Production'
+
+
 @app.route('/sam/pileup', methods=['GET', 'POST'])
 def pileup():
+    """Handle GET or POST requests to the pileup URL.
 
+    Form args:
+        region:     (str) Coordinate region to iterate over.
+        sam:        (File) SAM or ZIP file to process.
+        ids:        (str) (Optional) Line-delimited coordinates to display.
+        fasta:      (File) (Optional) FASTA file to use for genomic bases.
+        options:    (list of str) (Optional) List of options.
+
+    Returns:
+        A Flask Response object.
+
+    """
     # Render an empty form for GET request
     if request.method == 'GET':
         return render_template('pileup/form.html')
@@ -148,4 +188,3 @@ def pileup():
 
     # Send zipfile if applicable
     return send_file(zip_writer.send_zipfile(), attachment_filename=zip_writer.filename, as_attachment=True)
-
