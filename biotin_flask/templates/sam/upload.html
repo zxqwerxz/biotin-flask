@@ -18,7 +18,7 @@
 
     <ul style="font-style: italic">
         <li>Version 0.01 (11-24-2017)</li>
-        <li>Your current session ID is: {{ session_id }}</li>
+        <li>Your current session ID is: {{ session_id }} <a href="{{ url_for('sam_logout') }}">[Reset]</a></li>
     </ul>
 
     <hr>
@@ -92,5 +92,5 @@
 {% endblock %}
 
 {% block script %}
-<script type="text/javascript" src="{{ url_for('static', filename='js/sam_index.js')}}"></script>
+<script type="text/javascript" src="{{ url_for('static', filename='js/sam_upload.js')}}"></script>
 {% endblock %}

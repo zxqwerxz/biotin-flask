@@ -18,11 +18,16 @@ UPLOAD_FOLDER = os.path.join(os.path.dirname(__file__), 'tmp')
 
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+app.config['MAX_FILE_AGE'] = 120
 app.secret_key = os.environ.get('SECRET', 'Big Secret!')
+
+# Clean temporary file folders
+from biotin_flask.models.disk_io import delete_files
+delete_files('sam')
 
 import biotin_flask.views.application
 import biotin_flask.views.pileup_view
 import biotin_flask.views.partek_transpose_view
 import biotin_flask.views.psq_view
 import biotin_flask.views.genotyping_view
-import biotin_flask.views.sam_view
+import biotin_flask.views.sam.sam_upload

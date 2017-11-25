@@ -5,6 +5,8 @@ import os
 import random
 import string
 import tempfile
+import time
+import threading
 import zipfile
 
 import pysam
@@ -149,54 +151,3 @@ def random_id(size=6, chars=string.ascii_uppercase + string.digits):
 
     """
     return ''.join(random.choice(chars) for _ in range(size))
-
-
-def list_uploaded_files(folder=None, prefix=None, remove_prefix=True):
-    """List all the uploaded files matching a given prefix.
-
-    Parameters:
-        folder (str): A subdirectory to list files from.
-        prefix (str): A string prefix to match.
-        remove_prefix (bool): Remove prefix from returned list if true.
-
-    Returns:
-        A list of string filenames matching the prefix.
-
-    """
-    if folder:
-        files = os.listdir(os.path.join(app.config['UPLOAD_FOLDER'], folder))
-    else:
-        files = os.listdir(app.config['UPLOAD_FOLDER'])
-    if prefix:
-        result = []
-        for f in files:
-            if f.startswith(prefix):
-                if remove_prefix:
-                    result.append(f[len(prefix):])
-                else:
-                    result.append(f)
-        return result
-    return files
-
-
-def list_unique_files(session, ext):
-    """List all the unique SAM/BAM files belonging to a session.
-
-    Parameters:
-        session (str): The session ID.
-        ext (tuple): Valid extensions to consider
-
-    Returns:
-        A list of string filenames without the extension.
-
-    """
-    files = list_uploaded_files('sam', session)
-    samfiles = []
-    samdict = {}
-    for f in files:
-        filename = os.path.splitext(f)[0]
-        if filename not in samdict:
-            samdict[filename] = True
-            if f.endswith(ext):
-                samfiles.append(filename)
-    return samfiles

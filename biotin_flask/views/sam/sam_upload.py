@@ -1,0 +1,134 @@
+# -*- coding: utf-8 -*-
+"""Upload and manage a SAM file."""
+
+import os
+
+from flask import escape, flash, session, render_template, request
+from werkzeug import secure_filename
+
+from biotin_flask import app
+from biotin_flask.models.utils import random_id
+from biotin_flask.models.disk_io import list_dir, get_firstfile
+from biotin_flask.models.disk_io import upload, upload_sam
+from biotin_flask.models.disk_io import delete_file, delete_files
+from biotin_flask.models.json import json_success, json_notfound, json_notauth
+
+__author__ = 'Jeffrey Zhou'
+__copyright__ = 'Copyright (C) 2017, EpigenDx Inc.'
+__credits__ = ['Jeffrey Zhou']
+__version__ = '0.0.2'
+__status__ = 'Development'
+
+
+@app.route('/sam/upload', methods=['GET', 'POST'])
+def sam_upload():
+    """Render the file manager for handling SAM and FASTA files.
+
+    Methods:
+        GET: Render the File Management Page with form.
+        POST: Process the form upload and redirect user.
+
+    """
+    # Quick shortcut method so I don't have to rewrite this code
+    def render_form(session_id, samfiles=None, fastafile=None):
+        """Render the form associated with this route."""
+        return render_template(
+            'sam/upload.html',
+            session_id=escape(session_id),
+            samfiles=samfiles,
+            fastafile=fastafile
+        )
+
+    # Generate a new session ID if it doesn't already exist
+    if 'id' not in session:
+        session['id'] = random_id()
+
+    # Get all files associated with this session id
+    oldbams = list_dir('sam', session['id'], ('.bam'))
+    oldfasta = get_firstfile('sam', session['id'], ('.fa', '.fasta'))
+
+    # Render an empty form for a GET request
+    if request.method == 'GET':
+        return render_form(session['id'], oldbams, oldfasta)
+
+    # Otherwise validate the form on a POST request
+    if request.method == 'POST':
+        sams = request.files.getlist('sam')
+        fasta = request.files['fasta']
+
+        # Throw error if entire form is empty
+        if not fasta and not sams[0]:
+            flash('No files were selected for upload.', 'error')
+            return render_form(session['id'], oldbams, oldfasta)
+
+        # Throw error if any file does not have the appropriate extension
+        abort = False
+        for sam in sams:
+            if len(sam.filename) > 0:
+                ext = os.path.splitext(secure_filename(sam.filename))[1]
+                if ext.lower() not in ['.bam', '.sam']:
+                    abort = True
+        if fasta:
+            ext = os.path.splitext(secure_filename(fasta.filename))[1]
+            if ext.lower() not in ['.fa', '.fasta']:
+                abort = True
+        if abort:
+            flash('Invalid file types were uploaded', 'error')
+            return render_form(session['id'], oldbams, oldfasta)
+
+        # Upload SAM files
+        for sam in sams:
+            if len(sam.filename) > 0:
+                upload_sam(sam, sam.filename, escape(session['id']))
+
+        # Upload Fasta file; first delete old fasta files if they exist
+        if fasta:
+            delete_files('sam', session['id'], None, ('.fa', '.fasta'))
+            upload(fasta, fasta.filename, 'sam', escape(session['id']))
+
+        flash('Files were successfully uploaded.', 'success')
+        return render_template('sam.html', showHidden=True)
+
+
+@app.route('/sam/delete', methods=['POST'])
+def sam_delete():
+    """Delete a specified file and its similar extensions via AJAX."""
+    if 'id' not in session:
+        return json_notauth()
+
+    # Fetch queried filename from JSON request
+    filename = request.json['file']
+
+    # Delete a bam file and associated files
+    if filename.endswith(('.bam')):
+        front = os.path.splitext(filename)[0]
+        exts = ('.bam', '.bam.bai', '.sam')
+        if delete_files('sam', session['id'], front, exts):
+            return json_success()
+        return json_notfound()
+
+    # Delete some other kind of file
+    if delete_file('sam', filename, session['id']):
+        return json_success()
+    return json_notfound()
+
+
+@app.route('/sam/delete_allbam', methods=['POST'])
+def sam_delete_allbam():
+    """Delete all the non-fasta files that were uploaded in this session."""
+    if 'id' not in session:
+        return json_notauth()
+    exts = ('.bam', '.bam.bai', '.sam')
+    if delete_files('sam', session['id'], None, exts):
+        return json_success()
+    return json_notfound()
+
+
+@app.route('/sam/logout', methods=['GET'])
+def sam_logout():
+    """Log out of the session and delete all session files."""
+    if 'id' in session:
+        delete_files('sam', session['id'])
+        session.pop('id', None)
+    flash('Session was reset.', 'success')
+    return render_template('sam.html', showHidden=False)

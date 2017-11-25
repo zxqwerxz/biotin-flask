@@ -21,7 +21,7 @@ $(function() {
   $('#samfiles #deleteAll').click(function(event) {
     $.ajax({
       type: 'POST',
-      url: $SCRIPT_ROOT + '/sam/delete_all',
+      url: $SCRIPT_ROOT + '/sam/delete_allbam',
       data: JSON.stringify({ }),
       contentType: 'application/json',
       success: function(result) {
