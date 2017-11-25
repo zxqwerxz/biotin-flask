@@ -8,11 +8,15 @@
         <meta name="author" content="">
 
 		<title>{% block title %}{% endblock %}</title>
-        
+
 		<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/bootstrap.min.css') }}"></script>
 		<link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css" rel="stylesheet">
-        <link rel="shortcut icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
-		
+    <link rel="shortcut icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
+
+		<script type=text/javascript>
+			$SCRIPT_ROOT = {{ request.script_root|tojson|safe }};
+		</script>
+
 		<!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
         <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
         <!--[if lt IE 9]>
@@ -21,7 +25,7 @@
         <![endif]-->
 	</head>
 	<body>
-	    
+
 	    <!-- Navigation -->
         <nav class="navbar navbar-default navbar-static-top" role="navigation">
             <div class="container">
@@ -50,7 +54,7 @@
             </div>
             <!-- /.container -->
         </nav>
-	    
+
 		<div class="container">
 		{% with messages = get_flashed_messages() %}
 		  {% if messages %}
@@ -62,11 +66,12 @@
 			{% endfor %}
 		  {% endif %}
 		{% endwith %}
-		
+
 	    {% block body %}{% endblock %}
 	    </div>
-	    
+
 	    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
 	    <script type="text/javascript" src="//maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+			{% block script %}{% endblock %}
 	</body>
 </html>

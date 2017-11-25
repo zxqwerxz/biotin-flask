@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+{% block title %}File Manager | Biotin-Flask{% endblock %}
+
+{% block body %}
+
+<!-- Breadcrumb Trail-->
+<ol class="breadcrumb">
+  <li><a href="{{ url_for('index') }}">Home</a></li>
+    <li><a href="{{ url_for('sam') }}">Samfile Analysis</a></li>
+  <li class="active">File Manager</li>
+</ol>
+<!-- End Breadcrumbs -->
+
+<div class="row">
+<div class="col-lg-12">
+
+    <h1>SAM File Manager</h1>
+
+    <ul style="font-style: italic">
+        <li>Version 0.01 (11-24-2017)</li>
+        <li>Your current session ID is: {{ session_id }}</li>
+    </ul>
+
+    <hr>
+
+    <h3>Currently Uploaded Files:</h3>
+
+    <table id="samfiles" class="table table-sm table-bordered table-striped table-responsive">
+      <thead>
+        <tr bgcolor="#ffa07a"><td>
+          <button id="deleteAll" class="btn btn-danger btn-sm" style="float:right;">
+            Remove all
+          </button>
+          <h5>SAM/BAM File(s):</h5>
+        </td></tr>
+      </thead>
+      <tbody>
+        {% if samfiles %}
+        {% for file in samfiles %}
+        <tr><td>
+          <button title="{{ file }}" class="btn btn-danger btn-sm">
+            <i class="fa fa-times" aria-hidden="true"></i>
+          </button>
+          <span style="padding-left:10px;">{{ file }}</span>
+        </td></tr>
+        {% endfor %}
+        {% else %}
+        <tr><td>No files currently uploaded.</td></tr>
+        {% endif %}
+      </tbody>
+    </table>
+
+    <table id="fastafile" class="table table-sm table-bordered table-striped table-responsive">
+      <thead>
+        <tr bgcolor="#ffa07a"><td>
+          <h5>FASTA File:</h5>
+        </td></tr>
+      </thead>
+      <tbody>
+        {% if fastafile %}
+        <tr><td>
+          <button title="{{ fastafile }}" class="btn btn-danger btn-sm">
+            <i class="fa fa-times" aria-hidden="true"></i>
+          </button>
+          <span style="padding-left:10px;">{{ fastafile }}</span>
+        </td></tr>
+        {% else %}
+        <tr><td>No file currently uploaded.</td></tr>
+        {% endif %}
+      </tbody>
+    </table>
+
+    <hr>
+
+    <h3>Upload Additional Files:</h3>
+
+    <form id="uploadform" role="form" action="{{ url_for('sam_upload') }}" method="post" enctype="multipart/form-data">
+      <div class="form-group">
+        <label for="sam">SAM/BAM File(s):</label>
+        <input class="form-control" type="file" name="sam" accept=".sam,.bam" multiple>
+      </div>
+      <div id="fastaupload" class="form-group" {% if fastafile %}style="display:none;"{% endif %}>
+        <label for="fasta">FASTA(.fasta/.fa) File:</label> <span style="color:red;">*optional</span>
+        <input class="form-control" type="file" name="fasta" accept=".fa,.fasta">
+      </div>
+    </form>
+    <a href={{ url_for('sam') }}><button class="btn btn-default">Back</button></a>
+    <button class="btn btn-primary" type="submit" form="uploadform">Confirm</button>
+
+</div>
+</div>
+{% endblock %}
+
+{% block script %}
+<script type="text/javascript" src="{{ url_for('static', filename='js/sam_index.js')}}"></script>
+{% endblock %}

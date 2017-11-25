@@ -1,7 +1,24 @@
-import os, tempfile, zipfile, pysam
+"""Miscellaneous common shared utilities."""
+
+import io
+import os
+import random
+import string
+import tempfile
+import zipfile
+
+import pysam
 from HTMLParser import HTMLParser
-from io import BytesIO
 from flask import flash
+
+from biotin_flask import app
+
+__author__ = 'Jeffrey Zhou'
+__copyright__ = 'Copyright (C) 2017, EpigenDx Inc.'
+__credits__ = ['Jeffrey Zhou', 'Eric Zhou']
+__version__ = '0.0.5'
+__status__ = 'Production'
+
 
 class FastaUpload:
     """Class for handling any FASTA-like file upload."""
@@ -18,6 +35,7 @@ class FastaUpload:
             if found_it:
                 return line
         return None
+
 
 class SamUpload:
     """Class for handling any SAM-like file upload. Automatically converts to an indexed BAMfile."""
@@ -79,6 +97,7 @@ class SamUpload:
             os.remove(file)
             print 'deleted file: ' + file
 
+
 class WriteZip:
     """Class for handling any group of files that needs to be written to .zip as a response."""
 
@@ -90,7 +109,7 @@ class WriteZip:
         self.filelist.append(filename)
 
     def send_zipfile(self):
-        memory_file = BytesIO()
+        memory_file = io.BytesIO()
         with zipfile.ZipFile(memory_file, 'w') as zf:
             files = self.filelist
             for file in files:
@@ -102,6 +121,7 @@ class WriteZip:
         for file in self.filelist:
             os.remove(file)
             print 'deleted file: ' + file
+
 
 class ParsePsy(HTMLParser):
     """Class for turning the html file in a list of strings"""
@@ -115,3 +135,68 @@ class ParsePsy(HTMLParser):
     def handle_data(self,data):
         if data.strip():
             self.data.append(data.replace('\r\n ', ''))
+
+
+def random_id(size=6, chars=string.ascii_uppercase + string.digits):
+    """Generate a random string of letters and digits of a given length.
+
+    Parameters:
+        size (int): Length of the random string to be generated.
+        cahrs (list): List of valid characters to be used in generation.
+
+    Returns:
+        A string of random characters of length `size`.
+
+    """
+    return ''.join(random.choice(chars) for _ in range(size))
+
+
+def list_uploaded_files(folder=None, prefix=None, remove_prefix=True):
+    """List all the uploaded files matching a given prefix.
+
+    Parameters:
+        folder (str): A subdirectory to list files from.
+        prefix (str): A string prefix to match.
+        remove_prefix (bool): Remove prefix from returned list if true.
+
+    Returns:
+        A list of string filenames matching the prefix.
+
+    """
+    if folder:
+        files = os.listdir(os.path.join(app.config['UPLOAD_FOLDER'], folder))
+    else:
+        files = os.listdir(app.config['UPLOAD_FOLDER'])
+    if prefix:
+        result = []
+        for f in files:
+            if f.startswith(prefix):
+                if remove_prefix:
+                    result.append(f[len(prefix):])
+                else:
+                    result.append(f)
+        return result
+    return files
+
+
+def list_unique_files(session, ext):
+    """List all the unique SAM/BAM files belonging to a session.
+
+    Parameters:
+        session (str): The session ID.
+        ext (tuple): Valid extensions to consider
+
+    Returns:
+        A list of string filenames without the extension.
+
+    """
+    files = list_uploaded_files('sam', session)
+    samfiles = []
+    samdict = {}
+    for f in files:
+        filename = os.path.splitext(f)[0]
+        if filename not in samdict:
+            samdict[filename] = True
+            if f.endswith(ext):
+                samfiles.append(filename)
+    return samfiles
