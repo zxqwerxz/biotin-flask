@@ -24,7 +24,7 @@ __author__ = 'Jeffrey Zhou'
 __copyright__ = 'Copyright (C) 2017, EpigenDx Inc.'
 __credits__ = ['Jeffrey Zhou']
 __version__ = '0.0.1'
-__status__ = 'Development'
+__status__ = 'Production'
 
 
 ###############################################################################
@@ -79,7 +79,7 @@ def upload_sam(file_h, filename, prefix=None):
     """
     front, ext = os.path.splitext(filename)
     if not ext.lower().endswith(('.sam', '.bam')):
-        raise Exception("Invalid file extension in SAM file upload!")
+        raise ValueError('Invalid file extension in SAM file upload!')
 
     # Input file is a SAM file
     if ext.lower() == '.sam':
@@ -88,17 +88,35 @@ def upload_sam(file_h, filename, prefix=None):
 
         # Sort the extracted SAM file into a compressed BAM file
         bampath = os.path.splitext(sampath)[0] + '.bam'
-        pysam.sort('-o', bampath, sampath)
-        os.remove(sampath)
+        try:
+            pysam.sort('-o', bampath, sampath)
+        except:
+            raise IOError('Unable to read SAM file. Is it corrupt?')
+        finally:
+            os.remove(sampath)
         _delete_after_time(bampath)
 
     # Input file is a BAM file
     else:
-        bamname = front + '.bam'
-        bampath = upload(file_h, bamname, 'sam', prefix)
+        oldbamname = front + '.unsorted.bam'
+        oldbampath = upload(file_h, oldbamname, 'sam', prefix, timeout=None)
+
+        # Sort the BAM file in case it was unsorted
+        bampath = oldbampath.split('.unsorted.bam')[0] + '.bam'
+        try:
+            pysam.sort('-o', bampath, oldbampath)
+        except:
+            raise IOError('Unable to read BAM file. Is it corrupt?')
+        finally:
+            os.remove(oldbampath)
+        _delete_after_time(bampath)
 
     # Index the generated BAM file
-    pysam.index(bampath)
+    try:
+        pysam.index(bampath)
+    except:
+        raise IOError('Unable to index BAM file.')
+        os.remove(bampath)
     _delete_after_time(bampath + '.bai')
 
 
@@ -198,7 +216,7 @@ def delete_files(folder=None, prefix=None, filefront=None, ext=None):
 # Finding and Searching Files on Disk
 ###############################################################################
 
-def list_dir(folder=None, prefix=None, ext=None, remove_prefix=True):
+def list_dir(folder=None, prefix=None, ext=None):
     """List all files in app.config['UPLOAD_FOLDER'] matching criteria.
 
     Parameters:
@@ -206,7 +224,6 @@ def list_dir(folder=None, prefix=None, ext=None, remove_prefix=True):
                 the root directory.
         prefix (str): A string prefix to match.
         ext (tuple): A list of extensions to match. If None, list everything.
-        remove_prefix (bool): If true, remove the prefix string from results.
 
     Returns:
         A list of string filenames matching the criteria.
@@ -222,34 +239,29 @@ def list_dir(folder=None, prefix=None, ext=None, remove_prefix=True):
     if prefix and ext:
         for f in files:
             if f.startswith(prefix) and f.endswith(ext):
-                if remove_prefix:
-                    result.append(f[len(prefix):])
-                else:
-                    result.append(f)
+                result.append(base2path(f, 'sam'))
 
     # Query using only prefix
     elif prefix:
         for f in files:
             if f.startswith(prefix):
-                if remove_prefix:
-                    result.append(f[len(prefix):])
-                else:
-                    result.append(f)
+                result.append(base2path(f, 'sam'))
 
     # Query using only ext
     elif ext:
         for f in files:
             if f.endswith(ext):
-                result.append(f)
+                result.append(base2path(f, 'sam'))
 
     # No query provided
     else:
-        return files
+        for f in files:
+            result.append(base2path(f, 'sam'))
 
     return result
 
 
-def get_firstfile(folder=None, prefix=None, ext=None, remove_prefix=True):
+def get_firstfile(folder=None, prefix=None, ext=None):
     """Get the first file in app.config['UPLOAD_FOLDER'] matching criteria.
 
     Parameters:
@@ -260,12 +272,71 @@ def get_firstfile(folder=None, prefix=None, ext=None, remove_prefix=True):
         remove_prefix (bool): If true, remove the prefix string from results.
 
     Returns:
-        A string filename of the first file matching the criteria.
+        A string full path of the first file matching the criteria.
 
     """
-    files = list_dir(folder, prefix, ext, remove_prefix)
+    files = list_dir(folder, prefix, ext)
     if files:
         return files[0]
+    return None
+
+
+def base2path(filelist, folder=None, prefix=None):
+    """Convert a list of filenames (or a single file) to the full path on disk.
+
+    Parameters:
+        filelist (list/str): A list of filenames with extensions.
+        folder (str): The subdirectory the file is located in.
+        prefix (str): A string prefix to prepend.
+
+    Returns:
+        The full path of the file of interest.
+
+    """
+    def convert(filename, folder, prefix):
+        root = app.config['UPLOAD_FOLDER']
+        if folder:
+            if prefix:
+                return os.path.join(root, folder, prefix + filename)
+            return os.path.join(root, folder, filename)
+        if prefix:
+            return os.path.join(root, prefix + filename)
+        return os.path.join(root, filename)
+    if filelist:
+        if type(filelist) is list:
+            result = []
+            for filename in filelist:
+                result.append(convert(filename, folder, prefix))
+            return result
+        return convert(filelist, folder, prefix)
+    return None
+
+
+def basename(filepath, prefix=None):
+    """Convert a list of filepaths (or a single path) to their basename.
+
+    Parameters:
+        filepath (list/str): A list of file paths (or a single file path).
+        prefix (str): A prefix to remove from each basename.
+
+    Returns:
+        The basename of each file (either as a list or string).
+
+    """
+    if filepath:
+        if type(filepath) is list:
+            result = []
+            for filename in filepath:
+                base = os.path.basename(filename)
+                if prefix and base.startswith(prefix):
+                    result.append(base[len(prefix):])
+                else:
+                    result.append(base)
+            return result
+        base = os.path.basename(filepath)
+        if prefix and base.startswith(prefix):
+            return base[len(prefix):]
+        return base
     return None
 
 

@@ -54,10 +54,10 @@ def genotyping():
 
     # Throw error if one of the required files are missing
     if not f[0]:
-        flash('A reqired field is missing', 'error')
+        flash('A reqired field is missing', 'alert-warning')
         return render_template('genotyping/form.html', ref_exists=ref_exists, filenames=filenames)
     if not ref[0] and ref_sel == 'None':
-        flash('A reqired field is missing', 'error')
+        flash('A reqired field is missing', 'alert-warning')
         return render_template('genotyping/form.html', ref_exists=ref_exists, filenames=filenames)
 
     # Validate and save variant call files
@@ -65,7 +65,7 @@ def genotyping():
         filename = secure_filename(file.filename)
         filefront, extension = os.path.splitext(filename)
         if not extension == '.xls' and not extension =='.xlsx':
-            flash('Only .xls and .xlsx files are allowed.', 'error')
+            flash('Only .xls and .xlsx files are allowed.', 'alert-warning')
             return render_template('genotyping/form.html', ref_exists=ref_exists, filenames=filenames)
         path = os.path.join(app.config['UPLOAD_FOLDER'], secure_filename(file.filename))
         file.save(path)
@@ -79,11 +79,11 @@ def genotyping():
     # try:
     # Throw error if more than one snp list was provided
     if ref[0] and ref_sel != 'None':
-        flash('Only one SNP ID reference file should be selected')
+        flash('Only one SNP ID reference file should be selected', 'alert-warning')
         delete_files(f)
         return render_template('genotyping/form.html', ref_exists=ref_exists, filenames=filenames)
     if len(ref) > 1:
-        flash('Only one SNP ID reference file should be selected')
+        flash('Only one SNP ID reference file should be selected', 'alert-warning')
         delete_files(f)
         return render_template('genotyping/form.html', ref_exists=ref_exists, filenames=filenames)
 
@@ -92,7 +92,7 @@ def genotyping():
         filename = secure_filename(ref[0].filename)
         filefront, extension = os.path.splitext(filename)
         if not extension == '.xlsx':
-            flash('Only .xlsx files are allowed.', 'error')
+            flash('Only .xlsx files are allowed.', 'alert-warning')
             delete_files(f)
             return render_template('genotyping/form.html', ref_exists=ref_exists, filenames=filenames)
 
@@ -119,7 +119,7 @@ def genotyping():
             os.remove(os.path.join(app.config['UPLOAD_FOLDER'],'genotyping_results.zip'))
     except:
         delete_files(f)
-        flash('Could not delete zip file on server', 'error')
+        flash('Could not delete zip file on server', 'alert-warning')
         return render_template('genotyping/form.html', ref_exists=ref_exists, filenames=filenames)
 
     with zipfile.ZipFile(os.path.join(app.config['UPLOAD_FOLDER'], 'genotyping_results.zip'), 'w') as zipf:
@@ -144,7 +144,7 @@ def genotyping():
             for column in range(1, 50):
                 if file_ws.cell(row=1, column=column).value != fields[column-1]:
                     delete_files(f)
-                    flash('{} not formatted correctly'.format(secure_filename(file.filename)))
+                    flash('{} not formatted correctly'.format(secure_filename(file.filename)), 'alert-warning')
                     return render_template('genotyping/form.html', ref_exists=ref_exists, filenames=filenames)
 
             # Rename some of the fields
@@ -387,7 +387,7 @@ def genotyping():
         # Delete files from genotyping_results
         if not os.listdir(os.path.join(app.config['UPLOAD_FOLDER'], 'genotyping_results')):
             delete_files(f)
-            flash('The server was not cleaned of generated results files', 'error')
+            flash('The server was not cleaned of generated results files', 'alert-warning')
             return render_template('genotyping/form.html', ref_exists=ref_exists, filenames=filenames)
         for filename in os.listdir(os.path.join(app.config['UPLOAD_FOLDER'], 'genotyping_results')):
             if not filename == '.gitignore':
@@ -403,14 +403,14 @@ def genotyping():
                   mimetype='zip')
     except:
         delete_files(f)
-        flash('Could not send the zip file', 'error')
+        flash('Could not send the zip file', 'alert-warning')
         return render_template('genotyping/form.html', ref_exists=ref_exists, filenames=filenames)
 
     """
     except:
         # Catch all unknown exceptions
         delete_files(f)
-        flash('An unknown error occurred :( Please let Eric know', 'error')
+        flash('An unknown error occurred :( Please let Eric know', 'alert-warning')
         return render_template('genotyping/form.html', ref_exists=ref_exists, filenames=filenames)
     """
 

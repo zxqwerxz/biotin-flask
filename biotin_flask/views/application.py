@@ -10,7 +10,6 @@ biotin_flask/__init__.py
 
 """
 
-import logging
 import sys
 
 from flask import render_template, session
@@ -23,10 +22,6 @@ __copyright__ = 'Copyright (C) 2017, EpigenDx Inc.'
 __credits__ = ['Jeffrey Zhou']
 __version__ = '0.0.2'
 __status__ = 'Production'
-
-
-app.logger.addHandler(logging.StreamHandler(sys.stdout))
-app.logger.setLevel(logging.ERROR)
 
 
 @app.route('/')

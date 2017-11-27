@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}Results | Biotin-Flask{% endblock %}
+
+{% block body %}
+<small><b>File:</b> {{ sample }}</small><br />
+<small><b>Total Reads:</b> {{ reads.keys()|length }}</small>
+<h3>{{ gene }}</h3>
+<table class="table table-bordered table-sm text-center">
+  <thead class="thead-dark">
+    <tr>
+      <th>(+/-)</th>
+      <th>Read ID</th>
+      {% for pos in positions %}
+      <th>{{ pos }}</th>
+      {% endfor %}
+    </tr>
+    {% if fasta %}
+    <tr style="background-color:#ffa07a">
+      <td></td><td>Fasta Sequence:</td>
+      {% for base in fasta %}
+      <td>{{ base }}</td>
+      {% endfor %}
+    </tr>
+    {% endif %}
+  </thead>
+  <tbody>
+    {% for read, readData in reads.items() %}
+    <tr>
+      <td>{% if readData['strand'] %}-{% else %}+{% endif %}</td>
+      <td>{{ read }}</td>
+      {% for base in readData['bases'] %}
+      <td>{{ base }}</td>
+      {% endfor %}
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

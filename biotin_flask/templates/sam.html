@@ -3,8 +3,8 @@
 
 {% block body %}
 <ol class="breadcrumb">
-  <li><a href="{{ url_for('index') }}">Home</a></li>
-  <li class="active">Samfile Analysis</li>
+  <li class="breadcrumb-item"><a href="{{ url_for('index') }}">Home</a></li>
+  <li class="breadcrumb-item active">Samfile Analysis</li>
 </ol>
 
 <!-- Project One -->
@@ -23,19 +23,31 @@
 
 {% if showHidden %}
 <!-- Project Two -->
-<div class="row">
+<div class="row" style="display:none;">
     <div class="col-md-2 ">
-        <i class="fa fa-cubes" style="display:block;text-align:center;font-size:8em;margin-top:20px;"></i>
+        <i class="fa fa-bar-chart" style="display:block;text-align:center;font-size:8em;margin-top:20px;"></i>
     </div>
     <div class="col-md-8">
-        <h3>Samfile Pileup Viewer</h3>
-        <p>Visualize each site within a single amplicon region by clonal read. Designed for manual CpG/SNP calling or QC purposes.</p>
-        <p>Accepts SAM/.zip input and outputs html/csv(.zip).</p>
-        <a class="btn btn-primary" href="{{ url_for('pileup') }}">Select This</a>
+        <h3>Samfile Metrics</h3>
+        <p>View metrics and statistics about each SAM file.</p>
+        <a class="btn btn-primary" href="{{ url_for('sam_browse') }}">Select This</a>
     </div>
 </div>
 <!-- /.row -->
+
+<!-- Project Three -->
+<div class="row">
+    <div class="col-md-2 ">
+        <i class="fa fa-search-plus" style="display:block;text-align:center;font-size:8em;margin-top:20px;"></i>
+    </div>
+    <div class="col-md-8">
+        <h3>Samfile Sequence Browser</h3>
+        <p>Browse the sequence of all reads within specific coordinate ranges.</p>
+        <a class="btn btn-primary" href="{{ url_for('sam_browse') }}">Select This</a>
+    </div>
+</div>
+<hr>
+<!-- /.row -->
 {% endif %}
 
-<hr>
 {% endblock %}

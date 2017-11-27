@@ -8,16 +8,15 @@ from werkzeug import secure_filename
 
 from biotin_flask import app
 from biotin_flask.models.utils import random_id
-from biotin_flask.models.disk_io import list_dir, get_firstfile
-from biotin_flask.models.disk_io import upload, upload_sam
-from biotin_flask.models.disk_io import delete_file, delete_files
+from biotin_flask.models.disk_io import basename, delete_file, delete_files, get_firstfile, list_dir, upload, upload_sam  # noqa
+from biotin_flask.models.fasta import Fasta
 from biotin_flask.models.json import json_success, json_notfound, json_notauth
 
 __author__ = 'Jeffrey Zhou'
 __copyright__ = 'Copyright (C) 2017, EpigenDx Inc.'
 __credits__ = ['Jeffrey Zhou']
 __version__ = '0.0.2'
-__status__ = 'Development'
+__status__ = 'Production'
 
 
 @app.route('/sam/upload', methods=['GET', 'POST'])
@@ -35,8 +34,8 @@ def sam_upload():
         return render_template(
             'sam/upload.html',
             session_id=escape(session_id),
-            samfiles=samfiles,
-            fastafile=fastafile
+            samfiles=basename(samfiles, session_id),
+            fastafile=basename(fastafile, session_id)
         )
 
     # Generate a new session ID if it doesn't already exist
@@ -58,7 +57,7 @@ def sam_upload():
 
         # Throw error if entire form is empty
         if not fasta and not sams[0]:
-            flash('No files were selected for upload.', 'error')
+            flash('No files were selected for upload.', 'alert-warning')
             return render_form(session['id'], oldbams, oldfasta)
 
         # Throw error if any file does not have the appropriate extension
@@ -73,20 +72,34 @@ def sam_upload():
             if ext.lower() not in ['.fa', '.fasta']:
                 abort = True
         if abort:
-            flash('Invalid file types were uploaded', 'error')
+            flash('Invalid file types were uploaded', 'alert-warning')
             return render_form(session['id'], oldbams, oldfasta)
 
         # Upload SAM files
-        for sam in sams:
-            if len(sam.filename) > 0:
-                upload_sam(sam, sam.filename, escape(session['id']))
+        if sams:
+            error_count = 0
+            for sam in sams:
+                if len(sam.filename) > 0:
+                    try:
+                        upload_sam(sam, sam.filename, escape(session['id']))
+                    except IOError, message:
+                        flash(message, 'alert-warning')
+                        error_count = error_count + 1
+            if len(sams) == error_count:
+                return render_form(session['id'], oldbams, oldfasta)
 
         # Upload Fasta file; first delete old fasta files if they exist
         if fasta:
             delete_files('sam', session['id'], None, ('.fa', '.fasta'))
-            upload(fasta, fasta.filename, 'sam', escape(session['id']))
+            fa = upload(fasta, fasta.filename, 'sam', escape(session['id']))
+            try:
+                Fasta(fa)
+            except:
+                flash(message, 'alert-warning')
+                if not sams:
+                    return render_form(session['id'], oldbams, oldfasta)
 
-        flash('Files were successfully uploaded.', 'success')
+        flash('Files were successfully uploaded.', 'alert-success')
         return render_template('sam.html', showHidden=True)
 
 
