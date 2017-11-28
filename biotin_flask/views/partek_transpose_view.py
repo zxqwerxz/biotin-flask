@@ -22,7 +22,7 @@ def row_to_dict(csv_row):
         rec['G'] = csv_row[13]
         rec['T'] = csv_row[14]
     except:
-        flash('Csv file in inproper format.', 'error')
+        flash('Csv file in inproper format.', 'alert-warning')
     return rec
 
 @app.route('/misc/partek_transpose', methods=['GET', 'POST'])
@@ -36,17 +36,17 @@ def partek_transpose():
     f = request.files['csv']
     filename = secure_filename(f.filename)
     if not f:
-        flash('A reqired field is missing', 'error')
+        flash('A reqired field is missing', 'alert-warning')
         return render_template('partek_transpose/form.html')
     filefront, extension = os.path.splitext(filename)
     if not extension == '.csv':
-        flash('Only .csv files are allowed.', 'error')
+        flash('Only .csv files are allowed.', 'alert-warning')
         return render_template('partek_transpose/form.html')
     try:
         stream = io.StringIO(f.stream.read().decode("UTF8"), newline=None)
         csv_reader = csv.reader(stream)
     except:
-        flash('Unable to read csv file.', 'error')
+        flash('Unable to read csv file.', 'alert-warning')
         return render_template('partek_transpose/form.html')
 
     # Begin main processing loop
@@ -75,7 +75,7 @@ def partek_transpose():
             samples[sample_id] = {}
             samples[sample_id][pos] = record
         elif pos in samples[sample_id]:
-            flash('Duplicate record! Problem in csv file.', 'error')
+            flash('Duplicate record! Problem in csv file.', 'alert-warning')
         else:
             samples[sample_id][pos] = record
 

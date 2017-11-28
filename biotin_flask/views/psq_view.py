@@ -18,7 +18,7 @@ from biotin_flask.models.utils import ParsePsy
 __author__ = 'Eric Zhou'
 __copyright__ = 'Copyright (C) 2017, EpigenDx Inc.'
 __credits__ = ['Eric Zhou']
-__version__ = '0.0.1'
+__version__ = '0.0.2'
 __status__ = 'Production'
 
 @app.route('/misc/psq', methods=['GET', 'POST'])
@@ -42,7 +42,7 @@ def psq():
     f = request.files.getlist('html')
 
     if not f[0]:
-        flash('A reqired field is missing', 'error')
+        flash('A reqired field is missing', 'alert-warning')
         return render_template('psq/form.html')
 
     # Throw error if any file does not have .html extension
@@ -51,7 +51,7 @@ def psq():
         filename = secure_filename(file.filename)
         filefront, extension = os.path.splitext(filename)
         if not extension == '.html':
-            flash('Only .html files are allowed.', 'error')
+            flash('Only .html files are allowed.', 'alert-warning')
             return render_template('psq/form.html')
 
         # Check if 'FS' or 'RS' is in the file name
@@ -139,11 +139,11 @@ def psq():
                     break
 
             if len(data) != 16:
-                flash('The uploaded file(s) are not in the correct format', 'error')
+                flash('The uploaded file(s) are not in the correct format', 'alert-warning')
                 return render_template('psq/form.html')
             output.append(data)
         except:
-            flash('There was an error while reading file ' + secure_filename(file.filename), 'error')
+            flash('There was an error while reading file ' + secure_filename(file.filename), 'alert-warning')
             return render_template('psq/form.html')
 
     # Prepare csv printer

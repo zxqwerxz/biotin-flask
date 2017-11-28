@@ -1,3 +1,62 @@
+# -*- coding: utf-8 -*-
+"""Utilities for interacting pysam."""
+
+import pysam
+
+__author__ = 'Jeffrey Zhou'
+__copyright__ = 'Copyright (C) 2017, EpigenDx Inc.'
+__credits__ = ['Jeffrey Zhou']
+__version__ = '0.0.2'
+__status__ = 'Development'
+
+
+###############################################################################
+# Loading AlignmentFiles
+###############################################################################
+
+def load_sams(samfile_list, mode):
+    """Load a list samfile paths.
+
+    Parameter:
+        samfile_list (list): A list of full paths to sam files.
+        mode (str): The mode to open the files.
+
+    Returns:
+        A list of AlignmentFile objects.
+
+    """
+    result = []
+    for samfile in samfile_list:
+        result.append(pysam.AlignmentFile(samfile, mode))
+    return result
+
+
+###############################################################################
+# Managing Multiple AlignmentFiles
+###############################################################################
+
+def get_all_genes(bamlist):
+    """Get list of genes from a list of AlignmentFiles.
+
+    Parameter:
+        bamlist (list): A list of AlignmentFiles
+
+    Returns:
+        A string list of gene names, sorted.
+
+    """
+    geneDict = {}
+    for bam in bamlist:
+        for gene in bam.references:
+            if gene not in geneDict:
+                geneDict[gene] = True
+    return sorted(geneDict.keys())
+
+
+###############################################################################
+# Miscellaneous
+###############################################################################
+
 def get_indel(aligned_segment, query_position):
     """
     Similar behavior as the indel attribute in the pysam.PileupRead class (0-based query_position)
