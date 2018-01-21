@@ -33,4 +33,5 @@ import biotin_flask.views.application
 import biotin_flask.views.partek_transpose_view
 import biotin_flask.views.psq_view
 import biotin_flask.views.genotyping_view
+import biotin_flask.views.cov_view
 import biotin_flask.views.sam
