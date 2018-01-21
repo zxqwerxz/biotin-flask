@@ -116,3 +116,8 @@ Additionally, you must set up a virtualenv
 Then, a2dissite whatever is active, and a2ensite biotin-flask.
 
 Sudo service apache2 restart
+
+
+Credits
+-------
+* Bootstrap v4 Theme - "Sandstone" by Bootswatch

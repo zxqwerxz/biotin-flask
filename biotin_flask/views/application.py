@@ -10,20 +10,19 @@ biotin_flask/__init__.py
 
 """
 
-from flask import render_template
-from biotin_flask import app
+import sys
 
-import logging, sys
+from flask import render_template, session
+
+from biotin_flask import app
+from biotin_flask.models.disk_io import list_dir
 
 __author__ = 'Jeffrey Zhou'
 __copyright__ = 'Copyright (C) 2017, EpigenDx Inc.'
 __credits__ = ['Jeffrey Zhou']
-__version__ = '0.0.1'
+__version__ = '0.0.2'
 __status__ = 'Production'
 
-
-app.logger.addHandler(logging.StreamHandler(sys.stdout))
-app.logger.setLevel(logging.ERROR)
 
 @app.route('/')
 def index():
@@ -34,7 +33,10 @@ def index():
 @app.route('/sam/')
 def sam():
     """Render the landing page for SAM file analysis."""
-    return render_template('sam.html')
+    if 'id' in session and len(list_dir('sam', session['id'], ('.bam'))) > 0:
+        # At least one SAM file is uploaded, so show extended menu
+        return render_template('sam.html', showHidden=True)
+    return render_template('sam.html', showHidden=False)
 
 
 @app.route('/misc/')

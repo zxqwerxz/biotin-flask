@@ -3,8 +3,8 @@
 
 {% block body %}
 <ol class="breadcrumb">
-  <li><a href="{{ url_for('index') }}">Home</a></li>
-  <li class="active">Miscellaneous</li>
+  <li class="breadcrumb-item"><a href="{{ url_for('index') }}">Home</a></li>
+  <li class="breadcrumb-item active">Miscellaneous</li>
 </ol>
 
 <!-- Project One -->
@@ -19,6 +19,7 @@
         <a class="btn btn-primary" href="{{ url_for('partek_transpose') }}">Select This</a>
     </div>
 </div>
+<hr>
 <!-- /.row -->
 
 <!-- Project Two -->
@@ -33,6 +34,7 @@
         <a class="btn btn-primary" href="{{ url_for('psq') }}">Select This</a>
     </div>
 </div>
+<hr>
 <!-- /.row -->
 
 <!-- Project Three -->
@@ -47,6 +49,7 @@
         <a class="btn btn-primary" href="{{ url_for('genotyping') }}">Select This</a>
     </div>
 </div>
+<hr>
 <!-- /.row -->
 
 <!-- Project Four -->
@@ -62,6 +65,5 @@
     </div>
 </div>
 <!-- /.row -->
-
 <hr>
 {% endblock %}
