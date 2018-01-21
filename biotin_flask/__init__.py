@@ -25,3 +25,4 @@ import biotin_flask.views.pileup_view
 import biotin_flask.views.partek_transpose_view
 import biotin_flask.views.psq_view
 import biotin_flask.views.genotyping_view
+import biotin_flask.views.cov_view
