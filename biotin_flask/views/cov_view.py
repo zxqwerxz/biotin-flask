@@ -93,19 +93,25 @@ def cov():
             return render_template('cov/form.html')
         fasta_id = []
         methylation = []
+        reads = []
         for row in reader:
             fasta_id.append(row[0] + "." + row[1])
             methylation.append(row[3])
-        # Sort the methylation list
+            reads.append(int(row[4])+int(row[5]))
+        # Sort the list
         methylation_data = []
+        reads_data = []
         for element in fasta_ref:
             try:
                 indx = fasta_id.index(element)
                 methylation_data.append(methylation[indx])
+                reads_data.append(reads[indx])
             except:
                 methylation_data.append("n/a")
+                reads_data.append("n/a")
         # Write to the output
         writer.writerow([sample_id] + methylation_data)
+        writer.writerow(['']+reads_data)
 
     response = make_response(dest.getvalue())
     response.headers["Content-Disposition"] = "attachment; filename=results.csv"
