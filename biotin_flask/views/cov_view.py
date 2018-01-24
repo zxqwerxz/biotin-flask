@@ -83,6 +83,7 @@ def cov():
     writer.writerow(["Sample ID"] + fasta_ref)
 
     # Loop through samples
+    reads_data = []
     for file in f:
         sample_id = secure_filename(file.filename).split(".")[0]
         try:
@@ -100,7 +101,6 @@ def cov():
             reads.append(int(row[4])+int(row[5]))
         # Sort the list
         methylation_data = []
-        reads_data = []
         for element in fasta_ref:
             try:
                 indx = fasta_id.index(element)
@@ -111,7 +111,10 @@ def cov():
                 reads_data.append("n/a")
         # Write to the output
         writer.writerow([sample_id] + methylation_data)
-        writer.writerow(['']+reads_data)
+
+    writer.writerow('')
+    for i in xrange(len(f)):
+        writer.writerow([sample_id] + reads_data[i*len(methylation_data):(i+1)*len(methylation_data)])
 
     response = make_response(dest.getvalue())
     response.headers["Content-Disposition"] = "attachment; filename=results.csv"
