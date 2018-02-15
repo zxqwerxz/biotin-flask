@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+{% block title %}File Manager | Biotin-Flask{% endblock %}
+
+{% block body %}
+
+<!-- Breadcrumb Trail-->
+<ol class="breadcrumb">
+  <li class="breadcrumb-item"><a href="{{ url_for('index') }}">Home</a></li>
+  <li class="breadcrumb-item"><a href="{{ url_for('sam') }}">Samfile Analysis</a></li>
+  <li class="breadcrumb-item active">File Manager</li>
+</ol>
+<!-- End Breadcrumbs -->
+
+<div class="row">
+<div class="col-lg-12">
+
+    <h1>SAM File Manager</h1>
+
+    <ul style="font-style: italic">
+        <li>Version 0.01 (11-27-2017)</li>
+        <li>Your current session ID is: {{ session_id }} <a href="{{ url_for('sam_logout') }}">[Reset]</a></li>
+    </ul>
+
+    <hr>
+
+    <h3>Currently Uploaded Files:</h3>
+
+    <div class="card">
+      <div class="card-body">
+        <table id="samfileTable" class="table table-bordered table-sm table-striped">
+          <thead>
+            <tr><th>
+              {% if samfiles %}
+              <button id="deleteAllButton" class="btn btn-danger btn-sm link-hover" style="float:right;">
+                Remove all
+              </button>
+              {% endif %}
+              <big>SAM/BAM File(s):<big>
+            </th></tr>
+          </thead>
+          <tbody>
+            {% if samfiles %}
+            {% for file in samfiles %}
+            <tr><td>
+              <span data-filename="{{ file }}" class="badge badge-pill badge-danger link-hover">
+                <i class="fa fa-times" aria-hidden="true"></i>
+              </span>
+              <span style="padding-left:10px;">{{ file }}</span>
+            </td></tr>
+            {% endfor %}
+            {% else %}
+            <tr><td>No files currently uploaded.</td></tr>
+            {% endif %}
+          </tbody>
+        </table>
+        <table id="fastafileTable" class="table table-bordered table-sm table-striped">
+          <thead>
+            <tr><th>
+              <big>FASTA File:</big>
+            </th></tr>
+          </thead>
+          <tbody>
+            {% if fastafile %}
+            <tr><td>
+              <span data-filename="{{ fastafile }}" class="badge badge-pill badge-danger link-hover">
+                <i class="fa fa-times" aria-hidden="true"></i>
+              </span>
+              <span style="padding-left:10px;">{{ fastafile }}</span>
+            </td></tr>
+            {% else %}
+            <tr><td>No file currently uploaded.</td></tr>
+            {% endif %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <h3>Upload Additional Files:</h3>
+    <div class="card">
+      <div class="card-body">
+        <form id="uploadForm" role="form" action="{{ url_for('sam_upload') }}" method="post" enctype="multipart/form-data">
+
+          <div class="form-group">
+            <label for="samInput">SAM/BAM File(s):</label>
+            <input id="samInput" name="sam" type="file" accept=".sam,.bam" class="form-control" multiple>
+          </div>
+
+          <div id="fastaupload" class="form-group" {% if fastafile %}style="display:none;"{% endif %}>
+            <label for="fastaInput">FASTA(.fasta/.fa) File:</label> <span style="color:red;">*optional</span>
+            <input id="fastaInput" name="fasta" type="file" accept=".fa,.fasta" class="form-control">
+          </div>
+
+        </form>
+        <a class="btn btn-secondary" href={{ url_for('sam') }}>Back</a>
+        <button id="submitButton" class="btn btn-primary" type="submit" form="uploadForm" data-loading-text="<i class='icon-spinner icon-spin icon-large'></i> @Localization.Uploading">Upload</button>
+      </div>
+    </div>
+
+    <div id="spinner"><i class="fa fa-spinner fa-spin" style="font-size:100px"></i></div>
+    <div id="page-cover"></div>
+
+</div>
+</div>
+{% endblock %}
+
+{% block script %}
+<script type="text/javascript" src="{{ url_for('static', filename='js/sam_upload.js')}}"></script>
+{% endblock %}

@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 """Utilities for interacting pysam."""
 
+import os
 import pysam
 
 __author__ = 'Jeffrey Zhou'
@@ -8,6 +9,38 @@ __copyright__ = 'Copyright (C) 2017, EpigenDx Inc.'
 __credits__ = ['Jeffrey Zhou']
 __version__ = '0.0.2'
 __status__ = 'Development'
+
+
+###############################################################################
+# Wrapper classes around pysam
+###############################################################################
+
+class BamFile(pysam.AlignmentFile):
+    """Wrapper around the AlignmentFile class.
+
+    Attributes:
+        {See the pysam reference for inherited attributes/methods}
+        filepath (str): The full path of bam file on disk.
+
+    """
+
+    def __init__(self, filepath, *args, **kwargs):
+        """Construct a BAM file."""
+        super(BamFile, self).__init__(filename=filepath, *args, **kwargs)
+        self.filepath = filepath
+
+    def basename(self):
+        """Return the file basename."""
+        return os.path.basename(self.filepath)
+
+    def stem(self):
+        """Return the file stem, which is the basename w/o extension."""
+        basename = os.path.basename(self.filepath)
+        return os.path.splitext(basename)[0]
+
+    @classmethod
+    def upload(cls, file_h, filename):
+        """Upload a SAM/BAM file to disk."""
 
 
 ###############################################################################

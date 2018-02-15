@@ -1,10 +1,11 @@
 import os, pysam, sys, collections
 
 dir = os.path.dirname(__file__)
-filename = os.path.join(dir, 'files/sample2.bam')
+filename = os.path.join(dir, 'files/sample3.bam')
 
-samfile = pysam.AlignmentFile(filename, "rb")
+# samfile = pysam.AlignmentFile(filename, "rb")
 
+""""
 for gene in samfile.references:
     print gene
     break
@@ -12,17 +13,23 @@ for gene in samfile.references:
 for length in samfile.lengths:
     print length
     break
+"""
 
-# temp = samfile.fetch(gene, 0, 21516)
 
-mylist = [''] * 0 + ['a'] + [''] * 0
-print mylist
+class BamFile(pysam.AlignmentFile):
+    """Wrapper around the AlignmentFile class."""
 
-dicta = collections.OrderedDict({
-    'a': 1,
-    'b': 3
-})
+    def __init__(self, filepath, *args, **kwargs):
+        """Construct a BAM file."""
+        super(BamFile, self).__init__(filename=filepath, *args, **kwargs)
+        self.filepath = filepath
 
-s = "Hello"
 
-print s[0]
+samfile = BamFile(filename, "rb")
+for gene in samfile.references:
+    print gene
+    break
+
+for length in samfile.lengths:
+    print length
+    break

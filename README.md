@@ -118,6 +118,16 @@ Then, a2dissite whatever is active, and a2ensite biotin-flask.
 Sudo service apache2 restart
 
 
+Dependencies
+------------
+* pip
+  * flask
+  * Flask-WTF
+  * Flask-SQLAlchemy
+  * pysam
+  * openpyxl
+
+
 Credits
 -------
 * Bootstrap v4 Theme - "Sandstone" by Bootswatch

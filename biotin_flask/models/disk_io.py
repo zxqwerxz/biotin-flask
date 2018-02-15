@@ -16,9 +16,10 @@ import time
 import os
 
 import pysam
+from flask import current_app
 from werkzeug import secure_filename
 
-from biotin_flask import app
+# from biotin_flask import app
 
 __author__ = 'Jeffrey Zhou'
 __copyright__ = 'Copyright (C) 2017, EpigenDx Inc.'
@@ -32,7 +33,7 @@ __status__ = 'Production'
 ###############################################################################
 
 def upload(file_h, filename, folder=None, prefix=None,
-           timeout=app.config['MAX_FILE_AGE']):
+           timeout=current_app.config['MAX_FILE_AGE']):
     """Save a file in app.config['UPLOAD_FOLDER'] and delete after some time.
 
     Parameter:
@@ -53,9 +54,9 @@ def upload(file_h, filename, folder=None, prefix=None,
         filename = prefix + filename
     filename = secure_filename(filename)
     if folder:
-        filepath = os.path.join(app.config['UPLOAD_FOLDER'], folder, filename)
+        filepath = os.path.join(current_app.config['UPLOAD_FOLDER'], folder, filename)
     else:
-        filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+        filepath = os.path.join(current_app.config['UPLOAD_FOLDER'], filename)
     file_h.save(filepath)
     if timeout:
         _delete_after_time(filepath, timeout)
@@ -142,9 +143,9 @@ def delete_file(folder, filename, prefix=None):
     else:
         filename = secure_filename(filename)
     if folder:
-        filepath = os.path.join(app.config['UPLOAD_FOLDER'], folder, filename)
+        filepath = os.path.join(current_app.config['UPLOAD_FOLDER'], folder, filename)
     else:
-        filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+        filepath = os.path.join(current_app.config['UPLOAD_FOLDER'], filename)
     if os.path.isfile(filepath):
         os.remove(filepath)
         return True
@@ -177,9 +178,9 @@ def delete_files(folder=None, prefix=None, filefront=None, ext=None):
 
     # List files in a directory
     if folder:
-        files = os.listdir(os.path.join(app.config['UPLOAD_FOLDER'], folder))
+        files = os.listdir(os.path.join(current_app.config['UPLOAD_FOLDER'], folder))
     else:
-        files = os.listdir(app.config['UPLOAD_FOLDER'])
+        files = os.listdir(current_app.config['UPLOAD_FOLDER'])
     # Don't delete the .gitignore
     if '.gitignore' in files:
         files.remove('.gitignore')
@@ -204,9 +205,9 @@ def delete_files(folder=None, prefix=None, filefront=None, ext=None):
     if files:
         for f in files:
             if folder:
-                filepath = os.path.join(app.config['UPLOAD_FOLDER'], folder, f)
+                filepath = os.path.join(current_app.config['UPLOAD_FOLDER'], folder, f)
             else:
-                filepath = os.path.join(app.config['UPLOAD_FOLDER'], f)
+                filepath = os.path.join(current_app.config['UPLOAD_FOLDER'], f)
             os.remove(filepath)
         return True
     return False
@@ -230,9 +231,9 @@ def list_dir(folder=None, prefix=None, ext=None):
 
     """
     if folder:
-        files = os.listdir(os.path.join(app.config['UPLOAD_FOLDER'], folder))
+        files = os.listdir(os.path.join(current_app.config['UPLOAD_FOLDER'], folder))
     else:
-        files = os.listdir(app.config['UPLOAD_FOLDER'])
+        files = os.listdir(current_app.config['UPLOAD_FOLDER'])
     result = []
 
     # Query using both prefix and ext
@@ -294,7 +295,7 @@ def base2path(filelist, folder=None, prefix=None):
 
     """
     def convert(filename, folder, prefix):
-        root = app.config['UPLOAD_FOLDER']
+        root = current_app.config['UPLOAD_FOLDER']
         if folder:
             if prefix:
                 return os.path.join(root, folder, prefix + filename)
@@ -360,7 +361,7 @@ def _sleeper_delete(filepath, timeout):
         os.remove(filepath)
 
 
-def _delete_after_time(filepath, timeout=app.config['MAX_FILE_AGE']):
+def _delete_after_time(filepath, timeout=current_app.config['MAX_FILE_AGE']):
     """Spawns a sleeper thread to delete a file after some time.
 
     Parameter:

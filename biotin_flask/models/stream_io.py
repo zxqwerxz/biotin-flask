@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Utilities for sending files to the user.
+"""Utilities for sending and receiving files to/from the user.
 
 This module primarily deals with files that will not reside on the server
 hard drive. Any saved files should be deleted immediately after they are
@@ -27,13 +27,26 @@ __status__ = 'Production'
 # Streams - These files are never saved to the disk
 ###############################################################################
 
-def csv_response(filename, data, delimiter=','):
+def csv_receive(file_h, *args, **kwargs):
+    """Take a Flask file handle and return a csv.reader object.
+
+    Parameters:
+        file_h (object): The Flask file handle to the csv file to read.
+
+    Returns:
+        A csv.reader() object initialized with any extra args/kwargs.
+
+    """
+    stream = io.StringIO(file_h.stream.read().decode('UTF8'), newline=None)
+    return csv.reader(stream, *args, **kwargs)
+
+
+def csv_response(filename, data, *args, **kwargs):
     """Return a .csv file as a Flask response.
 
     Parameters:
         filename (str): The filename to send back to the user.
         data (list): Data to write to csv (see example).
-        delimiter (str): The character to use as the csv delimiter.
 
         data_input_example = [
             ['Hello', 'World', 'This', 'is', 'first', 'row'],
@@ -47,7 +60,7 @@ def csv_response(filename, data, delimiter=','):
     """
     # Write CSV file
     destination = StringIO.StringIO()
-    writer = csv.writer(destination, delimiter=delimiter)
+    writer = csv.writer(destination, *args, **kwargs)
     for row in data:
         writer.writerow(row)
 

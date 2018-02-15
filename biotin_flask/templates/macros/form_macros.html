@@ -1,0 +1,25 @@
+{# WTForms macros
+ # Heavily inspired by: https://gist.github.com/scabbiaza/10984645 #}
+
+{% macro form_field(form, field) -%}
+{%- set field_status = '' -%}
+{%- set class_ = kwargs.pop('class_', '') ~ ' form-control' -%}
+{%- if form.errors -%}
+  {%- if field.errors -%}
+    {%- set field_status = 'has-danger' -%}
+    {%- set class_ = class_ ~ ' is-invalid' -%}
+  {%- else -%}
+    {%- set field_status = 'has-success' -%}
+    {%- set class_ = class_ ~ ' is-valid' -%}
+  {%- endif -%}
+{%- endif -%}
+<div class="form-group {{ field_status }}">
+  {{ field.label(class_='form-control-label') }}{% if field.flags.required %} <span class="text-danger">*</span>{% endif %}
+  {{ field(class_=class_, **kwargs) }}
+  {% if field.errors -%}
+  <small class="form-control-feedback text-danger">{{ field.errors[0] | safe }}</small>
+  {% elif field.description %}
+  <small class="form-text text-muted">{{ field.description|safe }}</small>
+  {%- endif -%}
+</div>
+{%- endmacro %}
