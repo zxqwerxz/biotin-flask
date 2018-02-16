@@ -11,10 +11,10 @@ import io, os, csv, StringIO
 from flask import render_template, request, flash, send_file, make_response
 from werkzeug import secure_filename
 
-from biotin_flask import app
-from biotin_flask.models.openpyxl_ext import delete_column, wedge_column_right, csv_to_xlsx, delete_row, surround_border
+from .. import misc
+from ...models.openpyxl_ext import delete_column, wedge_column_right, csv_to_xlsx, delete_row, surround_border
 
-@app.route('/misc/cov', methods=['GET', 'POST'])
+@misc.route('/cov', methods=['GET', 'POST'])
 def cov():
     """Handle GET or POST requests to the psq URL.
 
@@ -28,7 +28,7 @@ def cov():
 
     # Render an empty form for GET request
     if request.method == 'GET':
-        return render_template('cov/form.html')
+        return render_template('misc/cov.html')
 
     # Otherwise validate the form on a POST request and process uploaded files
 
@@ -39,10 +39,10 @@ def cov():
     # Throw error if one of the required files are missing
     if not f[0]:
         flash('A reqired field is missing', 'error')
-        return render_template('cov/form.html')
+        return render_template('misc/cov.html')
     if not ref[0]:
         flash('A reqired field is missing', 'error')
-        return render_template('cov/form.html')
+        return render_template('misc/cov.html')
 
     # Validate NGS Data files
     for file in f:
@@ -50,17 +50,17 @@ def cov():
         filefront, extension = os.path.splitext(filename)
         if not extension == '.csv':
             flash('Only .csv and .csv files are allowed.', 'error')
-            return render_template('cov/form.html')
+            return render_template('misc/cov.html')
 
     # Validate reference file
     if len(ref) > 1:
         flash('Only one reference file should be selected')
-        return render_template('cov/form.html')
+        return render_template('misc/cov.html')
     filename = secure_filename(ref[0].filename)
     filefront, extension = os.path.splitext(filename)
     if not extension == '.csv':
         flash('Only .csv files are allowed.', 'error')
-        return render_template('cov/form.html')
+        return render_template('misc/cov.html')
 
     # Read the reference file
     try:
@@ -68,7 +68,7 @@ def cov():
         ref_reader = csv.reader(stream)
     except:
         flash('Unable to read csv file.', 'error')
-        return render_template('cov/form.html')
+        return render_template('misc/cov.html')
 
     fasta_ref = []
     for row in ref_reader:
@@ -91,7 +91,7 @@ def cov():
             reader = csv.reader(stream)
         except:
             flash('Unable to read csv file.', 'error')
-            return render_template('cov/form.html')
+            return render_template('misc/cov.html')
         fasta_id = []
         methylation = []
         reads = []

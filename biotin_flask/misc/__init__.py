@@ -20,3 +20,4 @@ def index():
 from .views import partek_transpose_view  # noqa
 from .views import psq_view  # noqa
 from .views import genotyping_view  # noqa
+from .views import cov_view  # noqa

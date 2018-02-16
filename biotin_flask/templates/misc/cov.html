@@ -1,16 +1,15 @@
-{% extends "base.html" %}
-{% block title %}NGS FASTA Match | Biotin-Flask{% endblock %}
+{% extends "layouts/base.html" %}
+{% block title %}NGS FASTA Match | {{ config.APP_NAME }}{% endblock %}
+
+{% block breadcrumb %}
+<ol class="breadcrumb">
+  <li class="breadcrumb-item"><a href="{{ url_for('main.index') }}">Home</a></li>
+  <li class="breadcrumb-item"><a href="{{ url_for('misc.index') }}">Miscellaneous</a></li>
+  <li class="breadcrumb-item active">NGS FASTA Match</li>
+</ol>
+{% endblock %}
 
 {% block body %}
-
-<!-- Breadcrumb Trail-->
-<ol class="breadcrumb">
-  <li><a href="{{ url_for('index') }}">Home</a></li>
-    <li><a href="{{ url_for('misc') }}">Miscellaneous</a></li>
-  <li class="active">NGS FASTA Match</li>
-</ol>
-<!-- End Breadcrumbs -->
-
 <div class="row">
 <div class="col-lg-12">
 
@@ -26,7 +25,7 @@
         </li>
     </ul>
     <hr>
-    <form role="form" action="{{ url_for('cov') }}" method="post" enctype="multipart/form-data">
+    <form role="form" action="{{ url_for('misc.cov') }}" method="post" enctype="multipart/form-data">
         <h3>Required Parameters:</h3>
 
         <div class="form-group">
