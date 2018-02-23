@@ -96,9 +96,16 @@ def cov():
         methylation = []
         reads = []
         for row in reader:
-            fasta_id.append(row[0] + "." + row[1])
-            methylation.append(row[3])
-            reads.append(int(row[4])+int(row[5]))
+            try:
+                fasta_id.append(row[0] + "." + row[1])
+                methylation.append(row[3])
+                reads.append(int(row[4])+int(row[5]))
+            except:
+                # If the file is space delimited and not comma delimited
+                row = row[0].split()
+                fasta_id.append(row[0] + "." + row[1])
+                methylation.append(row[3])
+                reads.append(int(row[4]) + int(row[5]))
         # Sort the list
         methylation_data = []
         for element in fasta_ref:
