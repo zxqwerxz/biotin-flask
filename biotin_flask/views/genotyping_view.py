@@ -134,14 +134,14 @@ def genotyping():
 
             # Validate the spreadsheet
             fields = ('Chrom', 'Position', 'Ref', 'Variant', 'Allele Call', 'Filter', 'Frequency', 'Quality', 'Filter',
-                      'Type', 'Allele Source', 'Allele Name', 'Gene ID', 'Region Name', 'VCF Position',
+                      'Type', 'Allele Source', 'Allele Name', 'Gene ID', 'Region Name', 'Subset Of', 'VCF Position',
                       'VCF Ref', 'VCF Variant', 'Original Coverage', 'Coverage', 'Filter', 'Coverage+',
                       'Filter', 'Coverage-', 'Filter', 'Allele Cov', 'Allele Cov+', 'Allele Cov-', 'Strand Bias',
                       'Filter', 'Common Signal Shift', 'Filter', 'Reference Signal Shift', 'Filter',
                       'Variant Signal Shift', 'Filter', 'Relative Read Quality', 'Filter', 'HP Length', 'Filter',
                       'Context Error+', 'Filter', 'Context Error-', 'Filter', 'Context Strand Bias', 'Filter',
                       'Sample Name', 'Barcode', 'Run Name', 'Allele', 'Location')
-            for column in range(1, 50):
+            for column in range(1, 51):
                 if file_ws.cell(row=1, column=column).value != fields[column-1]:
                     delete_files(f)
                     flash('{} not formatted correctly'.format(secure_filename(file.filename)), 'alert-warning')
@@ -166,8 +166,8 @@ def genotyping():
                         pass
 
             # Delete unnecessary columns
-            del_cols = ('AX','AW','AV','AS','AR','AQ','AP','AO','AN','AM','AL','AK','AJ','AI','AH','AG','AF','AE','AD',
-                        'AC','X','V','T','R','Q','P','O','I','F')
+            del_cols = ('AY','AX','AW','AT','AS','AR','AQ','AP','AO','AN','AM','AL','AK','AJ','AI','AH','AG','AF','AE',
+                        'AD','Y','W','U','S','R','Q','P','O','I','F')
             for col in del_cols:
                 file_ws = delete_column(file_ws,col)
 
