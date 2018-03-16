@@ -35,3 +35,4 @@ import biotin_flask.views.psq_view
 import biotin_flask.views.genotyping_view
 import biotin_flask.views.cov_view
 import biotin_flask.views.sam
+import biotin_flask.views.epic_view

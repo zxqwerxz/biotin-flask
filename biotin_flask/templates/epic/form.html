@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block title %}EPIC Array CG Identification | Biotin-Flask{% endblock %}
+
+{% block body %}
+
+<!-- Breadcrumb Trail-->
+<ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="{{ url_for('index') }}">Home</a></li>
+    <li class="breadcrumb-item"><a href="{{ url_for('misc') }}">Miscellaneous</a></li>
+    <li class="breadcrumb-item active">EPIC Array CG Identification</li>
+</ol>
+<!-- End Breadcrumbs -->
+
+<div class="row">
+    <div class="col-lg-12">
+
+        <h1>EPIC Array CG Identification</h1>
+
+        <ul style="font-style: italic">
+            <li>Version 0.01 (03-15-2018)</li>
+            <li>Takes a pre-formatted .csv file and outputs a csv file with the appropriately matched CG ID numbers</li>
+            <li>Sample <a href="{{ url_for('static', filename='img/epic_input_format.png') }}">input format</a>
+            and sample <a href="{{ url_for('static', filename='img/epic_output_format.png') }}">output format</a>.
+        </li>
+        </ul>
+
+        <h2>Directions for Input</h2>
+        <ol>
+            <li>Paste EpigenDX CpG #'s into column A</li>
+            <li>Paste EpigenDX hg38 coordinates into column B</li>
+            <li>Paste EPIC CpG ID's into column C</li>
+            <li>Paste EPIC hg38 coordinates into column D</li>
+            <li>Save this as a CSV file</li>
+            <li>Upload the CSV file and your results will be in this format:
+                <ul>
+                    <li>EpigenDX CpG #'s in column A</li>
+                    <li>EPIC CpG ID's in column B</li>
+                    <li>hg38 coordinates in column C</li>
+                </ul>
+            </li>
+        </ol>
+
+        <hr>
+        <form role="form" action="{{ url_for('epic') }}" method="post" enctype="multipart/form-data">
+            <h3>Required Parameters:</h3>
+
+            <div class="form-group">
+                <label>.csv File:</label> <span style="color:red;">*required</span>
+                <input class="form-control" type="file" name="csv">
+            </div>
+
+            <div class="form-group">
+                <label>forward or reverse strand?</label> <span style="color:red;">*required</span><br>
+                <input type="radio" name="strand" value="forward"> Forward<br>
+                <input type="radio" name="strand" value="reverse"> Reverse
+            </div>
+
+            <hr>
+
+            <button class="btn btn-primary btn-lg" type="submit">Submit</button>
+        </form>
+    </div>
+</div>
+{% endblock %}
