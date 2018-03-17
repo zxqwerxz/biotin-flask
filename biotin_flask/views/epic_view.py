@@ -86,9 +86,15 @@ def epic():
     for c, coord in enumerate(epic_coord):
         try:
             index = edx_coord.index(coord)
-            cg.append([edx_cg[index], epic_cg[c], edx_coord[index]])
+            cg.append([edx_cg[index], epic_cg[c], edx_coord[index], edx_cg[index] + ' ' + epic_cg[c]])
         except:
-            cg.append(['',epic_cg[c],edx_coord[index]])
+            cg.append(['',epic_cg[c],edx_coord[index],''])
+
+    for c, cg_num in enumerate(edx_cg):
+        try:
+            cg[c].append(cg_num)
+        except:
+            cg.append(['','','','',cg_num])
 
     # Prepare csv printer
     dest = StringIO.StringIO()
