@@ -60,7 +60,8 @@ def epic():
             return render_template('epic/form.html')
 
     try:
-        stream = io.StringIO(f[0].stream.read().decode("UTF8"), newline=None)
+        stream = io.StringIO(f[0].stream.read().decode('utf-8-sig'), newline=None)
+        print(stream)
         csv_reader = csv.reader(stream)
     except:
         flash('Unable to read csv file.', 'alert-warning')
@@ -88,7 +89,7 @@ def epic():
             index = edx_coord.index(coord)
             cg.append([edx_cg[index], epic_cg[c], edx_coord[index], edx_cg[index] + ' ' + epic_cg[c]])
         except:
-            cg.append(['',epic_cg[c],edx_coord[index],''])
+            cg.append(['n/a',epic_cg[c],coord,'n/a'])
 
     for c, cg_num in enumerate(edx_cg):
         try:
