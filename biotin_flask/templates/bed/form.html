@@ -19,8 +19,8 @@
         <ul style="font-style: italic">
             <li>Version 0.01 (05-15-2018)</li>
             <li>Takes a list of rs numbers in a .csv file and outputs a .csv file with the appropriately formatted information.</li>
-            <li>Sample <a href="{{ url_for('static', filename='img/epic_input_format.png') }}">input format</a>
-            and sample <a href="{{ url_for('static', filename='img/epic_output_format.png') }}">output format</a>.
+            <li>Sample <a href="{{ url_for('static', filename='img/bed_input_format.png') }}">input format</a>
+            and sample <a href="{{ url_for('static', filename='img/bed_output_format.png') }}">output format</a>.
         </li>
         </ul>
 
@@ -34,6 +34,26 @@
             </div>
 
             <hr>
+
+            <h3>Optional Parameters:</h3>
+            <div class="form-group">
+                <label>track name:</label>
+                <input class="form-control" type="text" name="track">
+            </div>
+            <p>Example: NGS76_HotSpots</p>
+
+            <hr>
+
+            <div class="form-group">
+                <label>description:</label>
+                <input class="form-control" type="text" name="description">
+            </div>
+            <p>Example: Genomaxx_SNPs_v1</p>
+
+            <hr>
+
+            <p style="font-size:130%">Be patient! The program takes a few minutes, or more
+            specifically, 0.59 seconds for every SNP.</p>
 
             <button class="btn btn-primary btn-lg" type="submit">Submit</button>
         </form>

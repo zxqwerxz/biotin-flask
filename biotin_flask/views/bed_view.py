@@ -62,6 +62,12 @@ def bed():
         flash('Unable to read csv file.', 'alert-warning')
         return render_template('epic/form.html')
 
+    # Header row
+    track = str(request.form.get('track'))
+    description = str(request.form.get('description'))
+    print(track)
+    print(description)
+
     # Begin main processing loop
     data = []
     for row in csv_reader:
@@ -84,6 +90,12 @@ def bed():
                 anc = element.getElementsByTagName('Seq5')[0].firstChild.nodeValue[-1]
                 break
 
+        # Get the flanking sequences
+        seq = root.getElementsByTagName('Sequence')[0]
+        seq5 = seq.getElementsByTagName('Seq5')[0].firstChild.nodeValue
+        seq3 = seq.getElementsByTagName('Seq3')[0].firstChild.nodeValue
+
+        # Get the HGVS ID's
         nc = []
         nc_ver = []
         for hgvs in root.getElementsByTagName('hgvs'):
@@ -117,6 +129,7 @@ def bed():
                         ref = descr.replace(str(coord), '').split('>')[0]
                         obs = descr.replace(str(coord), '').split('>')[1]
                         row.append('REF=' + ref + ';OBS=' + obs + ';ANCHOR=' + anc)
+                        row.extend(['.',seq5,seq3])
                         data.append(row)
                         print(row)
                     except:
@@ -125,12 +138,14 @@ def bed():
                             ref = ''
                             obs = descr.split('ins')[1]
                             row.append('REF=' + ref + ';OBS=' + obs + ';ANCHOR=' + anc)
+                            row.extend(['.',seq5, seq3])
                             data.append(row)
                         except:
                             # If it's not a SNP or insertion
                             # (if it's a deletion or wildtype allele)
                             if '=' not in descr:
                                 row.append('.')
+                                row.extend(['.',seq5, seq3])
                                 data.append(row)
                             else:
                                 pass
@@ -155,6 +170,7 @@ def bed():
                         ref = descr.replace(str(coord), '').split('>')[0]
                         obs = descr.replace(str(coord), '').split('>')[1]
                         row.append('REF=' + ref + ';OBS=' + obs + ';ANCHOR=' + anc)
+                        row.extend(['.',seq5, seq3])
                         data.append(row)
                         print(row)
                     except:
@@ -163,12 +179,14 @@ def bed():
                             ref = ''
                             obs = descr.split('ins')[1]
                             row.append('REF=' + ref + ';OBS=' + obs + ';ANCHOR=' + anc)
+                            row.extend(['.',seq5, seq3])
                             data.append(row)
                         except:
                             # If it's not a SNP or insertion
                             # (if it's a deletion or wildtype allele)
                             if '=' not in descr:
                                 row.append('.')
+                                row.extend(['.',seq5, seq3])
                                 data.append(row)
                             else:
                                 pass
@@ -180,6 +198,9 @@ def bed():
     dest = StringIO.StringIO()
     writer = csv.writer(dest)
 
+    # Write the header
+    writer.writerow(['track name=\"' + track + '\"','description=\"' + description + '\"',
+                     'type=bedDetail','','db=hg38','reference=GRCh38.p2'])
     for row in data:
         writer.writerow(row)
 
