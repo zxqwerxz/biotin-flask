@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}RS Number Preparation | Biotin-Flask{% endblock %}
+
+{% block body %}
+
+<!-- Breadcrumb Trail-->
+<ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="{{ url_for('index') }}">Home</a></li>
+    <li class="breadcrumb-item"><a href="{{ url_for('misc') }}">Miscellaneous</a></li>
+    <li class="breadcrumb-item active">RS Number Preparation</li>
+</ol>
+<!-- End Breadcrumbs -->
+
+<div class="row">
+    <div class="col-lg-12">
+
+        <h1>RS Number Preparation</h1>
+
+        <ul style="font-style: italic">
+            <li>Version 0.01 (05-15-2018)</li>
+            <li>Takes a list of rs numbers in a .csv file and outputs a .csv file with the appropriately formatted information.</li>
+            <li>Sample <a href="{{ url_for('static', filename='img/epic_input_format.png') }}">input format</a>
+            and sample <a href="{{ url_for('static', filename='img/epic_output_format.png') }}">output format</a>.
+        </li>
+        </ul>
+
+        <hr>
+        <form role="form" action="{{ url_for('bed') }}" method="post" enctype="multipart/form-data">
+            <h3>Required Parameters:</h3>
+
+            <div class="form-group">
+                <label>.csv File:</label> <span style="color:red;">*required</span>
+                <input class="form-control" type="file" name="csv">
+            </div>
+
+            <hr>
+
+            <button class="btn btn-primary btn-lg" type="submit">Submit</button>
+        </form>
+    </div>
+</div>
+{% endblock %}
