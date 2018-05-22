@@ -42,37 +42,45 @@ def bed():
 
     if not f[0]:
         flash('A required field is missing', 'alert-warning')
-        return render_template('epic/form.html')
+        return render_template('bed/form.html')
 
     if len(f) > 1:
         flash('Only one file input is accepted', 'alert-warning')
-        return render_template('epic/form.html')
+        return render_template('bed/form.html')
 
     for file in f:
         filename = secure_filename(file.filename)
         filefront, extension = os.path.splitext(filename)
         if not extension == '.csv':
             flash('Only .csv files are allowed.', 'alert-warning')
-            return render_template('epic/form.html')
+            return render_template('bed/form.html')
 
     try:
         stream = io.StringIO(f[0].stream.read().decode('utf-8-sig'), newline=None)
         csv_reader = csv.reader(stream)
     except:
         flash('Unable to read csv file.', 'alert-warning')
-        return render_template('epic/form.html')
+        return render_template('bed/form.html')
 
     # Header row
     track = str(request.form.get('track'))
     description = str(request.form.get('description'))
-    print(track)
-    print(description)
 
     # Begin main processing loop
     data = []
     for row in csv_reader:
         rsid = row[0]
-        response = Entrez.efetch(db='SNP', id=rsid[2:], rettype='flt', retmode='xml')
+        try:
+            response = Entrez.efetch(db='SNP', id=rsid[2:], rettype='flt', retmode='xml')
+        except:
+            flash('NCBI was unable to fetch one of the rs numbers. Either NCBI was overloaded,'
+                  'or one of the rs numbers was invalid.', 'alert-warning')
+
+            # write an error row
+            row = ['error','','',rsid,'','','','']
+            data.append(row)
+            continue
+
         doc = minidom.parseString(response.read())
 
         root = doc.getElementsByTagName('Rs')[0]
@@ -88,6 +96,7 @@ def bed():
         for element in root.getElementsByTagName('Ss'):
             if element.getAttribute('orient') == strand:
                 anc = element.getElementsByTagName('Seq5')[0].firstChild.nodeValue[-1]
+                anc = anc.upper()
                 break
 
         # Get the flanking sequences
@@ -95,13 +104,23 @@ def bed():
         seq5 = seq.getElementsByTagName('Seq5')[0].firstChild.nodeValue
         seq3 = seq.getElementsByTagName('Seq3')[0].firstChild.nodeValue
 
+        # Get the chromosome number
+        comp = ass.getElementsByTagName('Component')[0]
+        chr = comp.attributes['chromosome'].value
+
         # Get the HGVS ID's
         nc = []
         nc_ver = []
         for hgvs in root.getElementsByTagName('hgvs'):
             id = hgvs.firstChild.nodeValue
             if id[:2] == 'CM':
-                continue
+                # Get the hg38 coordinates here
+                # I think the CM numbers (GenBank accession numbers)
+                # are more reliable for the coordinates
+                descr = str(id.split(':g.')[1])
+                coord = int(''.join(filter(str.isdigit, descr)))
+                if '_' in descr:
+                    coord = int(descr.split('_')[0])
             elif id[:3] == 'NC_':
                 nc.append(id)
                 nc_ver.append(int(id.split(".")[1].replace(':g','')))
@@ -114,31 +133,20 @@ def bed():
                 row = []
                 ver = int(entry.split('.')[1].replace(':g',''))
                 if ver == max_ver:
-                    chr = entry.split('.')[0][-2:]
-                    if chr[0] == '0':
-                        chr = chr[1]
-                    row.append('chr' + str(chr))
+                    row.extend(['chr' + str(chr),coord, coord + 1,rsid])
                     descr = str(entry.split(':g.')[1])
-                    coord = int(''.join(filter(str.isdigit, descr)))
-                    if '_' in descr:
-                        coord = int(descr.split('_')[0])
-                    row.extend([coord, coord + 1, rsid])
-
                     # If it's a SNP
                     try:
-                        ref = descr.replace(str(coord), '').split('>')[0]
-                        obs = descr.replace(str(coord), '').split('>')[1]
-                        row.append('REF=' + ref + ';OBS=' + obs + ';ANCHOR=' + anc)
-                        row.extend(['.',seq5,seq3])
+                        ref = descr.split('>')[0][-1]
+                        obs = descr.split('>')[1]
+                        row.extend(['REF=' + ref + ';OBS=' + obs + ';ANCHOR=' + anc, '.', seq5, seq3])
                         data.append(row)
-                        print(row)
                     except:
                         # If it's an insertion
                         try:
                             ref = ''
                             obs = descr.split('ins')[1]
-                            row.append('REF=' + ref + ';OBS=' + obs + ';ANCHOR=' + anc)
-                            row.extend(['.',seq5, seq3])
+                            row.extend(['REF=' + ref + ';OBS=' + obs + ';ANCHOR=' + anc, '.', seq5, seq3])
                             data.append(row)
                         except:
                             # If it's not a SNP or insertion
@@ -158,28 +166,19 @@ def bed():
                 row = []
                 id = hgvs.firstChild.nodeValue
                 if id[:2] == 'CM':
-                    comp = ass.getElementsByTagName('Component')[0]
-                    chr = comp.attributes['chromosome'].value
-                    row.append('chr' + str(chr))
-                    descr = str(id.split(':g.')[1])
-                    coord = int(''.join(filter(str.isdigit, descr)))
-                    row.extend([coord, coord + 1, rsid])
-
+                    row.extend(['chr' + str(chr), coord, coord + 1, rsid])
                     # If it's a SNP
                     try:
-                        ref = descr.replace(str(coord), '').split('>')[0]
-                        obs = descr.replace(str(coord), '').split('>')[1]
-                        row.append('REF=' + ref + ';OBS=' + obs + ';ANCHOR=' + anc)
-                        row.extend(['.',seq5, seq3])
+                        ref = descr.split('>')[0][-1]
+                        obs = descr.split('>')[1]
+                        row.extend(['REF=' + ref + ';OBS=' + obs + ';ANCHOR=' + anc,'.',seq5, seq3])
                         data.append(row)
-                        print(row)
                     except:
                         # If it's an insertion
                         try:
                             ref = ''
                             obs = descr.split('ins')[1]
-                            row.append('REF=' + ref + ';OBS=' + obs + ';ANCHOR=' + anc)
-                            row.extend(['.',seq5, seq3])
+                            row.extend(['REF=' + ref + ';OBS=' + obs + ';ANCHOR=' + anc, '.', seq5, seq3])
                             data.append(row)
                         except:
                             # If it's not a SNP or insertion
