@@ -79,7 +79,7 @@ def epic():
             edx_coord.append(int(row[1].split(":")[1]))
             if row[2]:
                 epic_cg.append(row[2])
-                epic_coord.append(int(row[3])+1)
+                epic_coord.append(int(row[3])+strand)
         except:
             break
 
