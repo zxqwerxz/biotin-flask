@@ -85,7 +85,7 @@ def cov():
     # Loop through samples
     reads_data = []
     for file in f:
-        sample_id = secure_filename(file.filename).split(".")[0]
+        sample_id = secure_filename(file.filename)
         try:
             stream = io.StringIO(file.stream.read().decode("UTF8"), newline=None)
             reader = csv.reader(stream)
