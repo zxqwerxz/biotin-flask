@@ -1,3 +1,6 @@
+<!DOCTYPE html>
+<html>
+<head></head>
 {% extends “base.html” %}
 {% block title %}EPIC Array CG to CpG Match | Biotin-Flask{% endblock %} 
 
@@ -5,20 +8,20 @@
 
 <!— Breadcrumb Trail—>
 <ol class=breadcrumb>
-	<li class=breadcrumb-item><a href=“{{ url_for(‘index’) }}>Home</a></li>
-	<li class=breadcrumb-item><a href=“{{ url_for(‘misc’) }}>Miscellaneous</a></li>
-<li class=breadcrumb-item active>EPIC Array CG to CpG Match</li>
+	<li class=breadcrumb-item><a href=“{{ url_for(‘index’) }}”>Home</a></li>
+	<li class=breadcrumb-item><a href=“{{ url_for(‘misc’) }}”>Miscellaneous</a></li>
+	<li class=breadcrumb-item active>EPIC Array CG to CpG Match</li>
 </ol>
 <!— End Breadcrumbs —>
 
 <div class=row>
 	<div class=col-lg-12>
 
-		<h1>EPIC Array CG to CpG Match</h1>
+	<h1>EPIC Array CG to CpG Match</h1>
 		
-		<ul style=font—style: italic>
-			<li>Version 0.01 (08-10-18)</li>
-			<li>Takes an excel file containing ‘All CpGs’ and ‘EPIC Array’ tabs and returns the same file with a new sheet labelled ‘New CpGs’ with all the CpGs correctly matched with the CG IDs.</li>
+		<ul style=“font—style: italic”>
+			<li><em>Version 0.01 (08-10-2018)</em></li>
+			<li><em>Takes an excel file containing ‘All CpGs’ and ‘EPIC Array’ tabs and returns the same file with a new sheet labelled ‘New CpGs’ with all the CpGs correctly matched with the CG IDs.</em></li>
 		</ul>
 
 		<h2>Directions for Input</h2>
@@ -29,39 +32,40 @@
 			<li>EPIC array should have it’s own sheet with the correct CG IDs filled in.</li>
 		</ol>
 		
-		<hr>
+	<hr>
 		<form role=“form” action=“{{ url_for(‘cpgid’) }}” method=“post” enctype=“multipart/form-data”>
 
 		<h3> Required Parameters:</h3>
 
-		<div class=form-group>
+		<div class=“form-group”>
 			<label>Excel File (.xlsx):</label><span style=color:red;>*required</span>
-			<input class=form-control type=file name=xlsx>
+			<input class=“form-control” type=file name=“xlsx”>
 		</div>
 
-		<div class=form-group>
+		<div class=“form-group”>
 			<label>Name of EPIC Array sheet (ie ‘EPIC 850K’)</label><span style=color:red;>*required</span>
-			<input class=form-control type=text name=epic_name>
+			<input class=“form-control” type=text name=“epic_name”>
 		</div>
 
-		<div class=form-group>
+		<div class=“form-group”>
 			<label>Heading of CG ID locations in EPIC Array sheet (ie ‘hg38’)</label><span style=color:red;>*required</span>
-			<input class=form-control type=text name=hg_version>
+			<input class=“form-control” type=text name=“hg_version”>
 		</div>
 
-		<div class=form-group>
+		<div class=“form-group”>
 			<label>Chromosome Number</label><span style=color:red;>*required</span>
-			<input class=form-control type=text name=chr_num>
+			<input class=“form-control” type=text name=“chr_num”>
 		</div>
 
 		<div class=form-group>
 			<label>Chromosome location heading in ‘All CpGs’ sheet (ie ‘GRCh38 (+)’)</label><span style=color:red;>*required</span>
-			<input class=form-control type=text name=chr_heading>
+			<input class=“form-control” type=text name=“chr_heading”>
 		</div>
 
 		<hr>
-		<button class=btn btn-primary btn-lg type=submit>Submit</button>
-	</form>
+			<button class=“btn btn-primary btn-lg” type=submit>Submit</button>
+		</form>
 </div>
 </div>
 {% endblock %}
+</html>
