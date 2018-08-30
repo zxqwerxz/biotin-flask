@@ -26,11 +26,12 @@
 
 		<h2>Directions for Input</h2>
 		<ol>
-			<li>Input all required parameters (excel filename, name of EPIC array sheet, CG ID heading in EPIC sheet, chromosome number, chromosome location heading from All CpGs sheet).</li>
+			<li>Input all required parameters (excel filename, name of EPIC array sheet, CG ID heading in EPIC sheet, chromosome number, chromosome location heading from All CpGs sheet). Make sure all parameters match their originals exactly, including spaces</li>
 			<li>'All CpGs' tab should say 'All CpGs' (with a space) and 'CpG #' (with a space) should be the heading of the CpG number column.</li>
 			<li>Chromosome location column in 'All CpGs' sheet should have 'Chr' with the chromosome number in front of the location (ie 'Chr11:65432').</li>
 			<li>EPIC array should have it's own sheet with the correct CG IDs filled in.</li>
 		</ol>
+		<li><font color="red">Notice: File that is returned does not have Gene Structure pictures. Copy and paste new CpG list into original file.</font></li>
 		
 	<hr>
 		<form role="form" action="{{ url_for('cgid') }}" method="post" enctype="multipart/form-data">
