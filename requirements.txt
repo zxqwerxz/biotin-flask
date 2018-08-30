@@ -11,3 +11,4 @@ openpyxl==2.4.8
 pysam==0.13
 Werkzeug==0.10.4
 biopython==1.71
+xlrd==1.1.0
