@@ -85,7 +85,11 @@ def cgid():
     a,b,c=getIndex(cSheet,chrLocHeading)
     cpgList=findCells(eDict,cSheet,a,b,c)
     newFile=writeNewSheet(os.path.join(app.config['UPLOAD_FOLDER'],secure_filename(file.filename)),cpgList)
-    return send_file(newFile, as_attachment=True)
+    try:
+        return send_file(newFile, as_attachment=True)
+    except:
+        flash('Could not send the file', 'alert-warning')
+        return render_template('cgid/form.html')
 
     
 #Begin Helper Functions
