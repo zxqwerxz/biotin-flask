@@ -4,10 +4,11 @@
 
 import xlrd, os, io, StringIO
 from openpyxl import load_workbook
-from flask import render_template, request, flash, make_response
+from flask import render_template, request, flash, make_response, send_file
 from werkzeug import secure_filename
  
 from biotin_flask import app
+from biotin_flask.models.openpyxl_ext import csv_to_xlsx
 
 __author__ = "Lindsay Tomczak"
 __copyright__ = "Copyright (C) 2018, EpigenDx Inc."
@@ -17,7 +18,77 @@ __status__ = "Production"
 
 @app.route("/misc/cgid", methods=["GET", "POST"])
 
+
+#Main function that calls helper functions and gets data from html template page.
+def cgid():
+    """Handle GET or POST requests to the psq URL.
+
+    Form args:
+        f: (File) an excel file uploaded by user
+        epicTab: (text) the name of the EPIC Array sheet in excel file
+        hgVersion: (text) the name of the heading of the CG location
+                    in the EPIC array sheet
+        chrNum: (text) the number of the chromosome
+        chrLocHeading: (text) the name of the location heading in All CpGs sheet 
+
+        Returns:
+        The same excel file with a new sheet added titled "New CpGs"
+
+    """
+    #Render an empty form for GET request.
+    if request.method == 'GET':
+        return render_template('cgid/form.html')
+
+    #Otherwise validate the form on a POST request and process uploaded files.
+    f= request.files.getlist('xlsx')
+    for file in f:
+        filename = secure_filename(file.filename)
+        filefront, extension = os.path.splitext(filename)
+        if not extension == '.xlsx' and not extension == '.xls':
+            flash('Only .xlsx files are allowed.', 'alert-warning')
+            return render_template('cgid/form.html')
+        path= os.path.join(app.config['UPLOAD_FOLDER'], secure_filename(file.filename))
+        file.save(path)
+
+    #Throw errors if file or required entries are missing or if more than one file
+    #is entered.
+    if not f[0]:
+        flash('A required field is missing', 'alert-warning')
+        return render_template('cgid/form.html')
+    if len(f) > 1:
+        flash('Only one file input is accepted', 'alert-warning')
+        return render_template('cgid/form.html')
+
+    epicTab= request.form.get('epic_name')
+    if not epicTab[0]:
+        flash('A required field is missing', 'alert-warning')
+        return render_template('cgid/form.html')
     
+    hgVersion= request.form.get('hg_version')
+    if not hgVersion[0]:
+        flash('A required field is missing', 'alert-warning')
+        return render_template('cgid/form.html')
+
+    chrNum= request.form.get('chr_num')
+    if not chrNum[0]:
+        flash('A required field is missing', 'alert-warning')
+        return render_template('cgid/form.html')
+
+    chrLocHeading= request.form.get('chr_heading')
+    if not chrLocHeading[0]:
+        flash('A required field is missing', 'alert-warning')
+        return render_template('cgid/form.html')
+
+    
+    cSheet,eSheet=readFile(os.path.join(app.config['UPLOAD_FOLDER'],secure_filename(file.filename)),epicTab)
+    eDict=makeEpicDict(eSheet,hgVersion,chrNum,chrLocHeading)
+    a,b,c=getIndex(cSheet,chrLocHeading)
+    cpgList=findCells(eDict,cSheet,a,b,c)
+    newFile=writeNewSheet(os.path.join(app.config['UPLOAD_FOLDER'],secure_filename(file.filename)),cpgList)
+    return send_file(newFile, as_attachment=True)
+
+    
+#Begin Helper Functions
 #Takes in the excel file name and the name of the epic 450k array tab
 #since it is different on each excel (CpG tab usually stays the same),
 #returns the desried sheets of the excel file, one for all CpGs and 450k.
@@ -130,6 +201,8 @@ def writeNewSheet(filename,cpgList):
     for j in range(len(cpgList)):
         newSheet.append([cpgList[j] for i in range(1)])
     excelFile.save(filename)
+    return filename
+
 
 
 #Helper function gets the index for the row of labels in the cpg sheet,
@@ -151,66 +224,5 @@ def getIndex(cpgSheet,chrHead):
         j=j+1
     return(rowIndex,cpgIndex,locIndex)
 
-#Main function that calls helper functions and gets data from webpage.
-def cgid():
-    """Handle GET or POST requests to the psq URL.
 
-    Form args:
-        f: (File) an excel file uploaded by user
-        epicTab: (text) the name of the EPIC Array sheet in excel file
-        hgVersion: (text) the name of the heading of the CG location
-                    in the EPIC array sheet
-        chrNum: (text) the number of the chromosome
-        chrLocHeading: (text) the name of the location heading in All CpGs sheet 
-
-        Returns:
-        The same excel file with a new sheet added titled "New CpGs"
-
-    """
-    #Render an empty form for GET request.
-    if request.method == 'GET':
-        return render_template('cgid/form.html')
-
-    #Otherwise validate the form on a POST request and process uploaded files.
-    f= request.files.getlist('xlsx')
-    filename = secure_filename(f.filename)
-    filefront, extension = os.path.splitext(filename)
-
-    #Throw errors if file or required entries are missing or if more than one file
-    #is entered.
-    if not extension == '.xlsx' and not extension == '.xls':
-        flash('Only .xlsx files are allowed.', 'alert-warning')
-        return render_template('cgid/form.html')
-    if not f[0]:
-        flash('A required field is missing', 'alert-warning')
-        return render_template('cgid/form.html')
-    if len(f) > 1:
-        flash('Only one file input is accepted', 'alert-warning')
-        return render_template('cgid/form.html')
-
-    epicTab= request.form['epic_name']
-    if not epicTab[0]:
-        flash('A required field is missing', 'alert-warning')
-        return render_template('cgid/form.html')
-    
-    hgVersion= request.form['hg_version']
-    if not hgVersion[0]:
-        flash('A required field is missing', 'alert-warning')
-        return render_template('cgid/form.html')
-
-    chrNum= request.form['chr_num']
-    if not chrNum[0]:
-        flash('A required field is missing', 'alert-warning')
-        return render_template('cgid/form.html')
-
-    chrLocHeading= request.form['chr_heading']
-    if not chrLocHeading[0]:
-        flash('A required field is missing', 'alert-warning')
-        return render_template('cgid/form.html')
-
-    cSheet,eSheet=readFile(filename,epicTab)
-    eDict=makeEpicDict(eSheet,hgVersion,chrNum,chrLocHeading)
-    a,b,c=getIndex(cSheet,chrLocHeading)
-    cpgList=findCells(eDict,cSheet,a,b,c)
-    writeNewSheet(filename,cpgList)
 
