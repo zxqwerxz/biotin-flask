@@ -87,7 +87,9 @@ def psq():
             counter = 0
             neighbor = 0
 
+            print clean
             for item in clean[index]:
+                print item
                 if neighbor > 0:
                     data.append(item)
                     neighbor -= 1
@@ -100,45 +102,51 @@ def psq():
                         counter += 1
 
                 elif counter == 1:
+                    # Look for Description (Gene Name)
+                    if item == 'Description':
+                        neighbor = 1
+                        counter += 1
+
+                elif counter == 2:
                     # Look for Score:
                     if item.split()[0] == 'Score:':
                         data.append(item.split()[1])
                         counter += 1
 
-                elif counter == 2:
+                elif counter == 3:
                     # Look for F1 Primer
                     if item == 'F1':
                         neighbor = 4
                         counter += 1
 
-                elif counter == 3:
+                elif counter == 4:
                     # Look for R1 Primer
                     if item == 'R1':
                         neighbor = 4
                         counter+=1
 
-                elif counter == 4:
+                elif counter == 5:
                     # Look for S1 Primer
                     if item == 'S1':
                         neighbor = 4
                         counter += 1
 
-                elif counter == 5:
+                elif counter == 6:
                     # Look for Amplicon Length
                     if item.replace(' ', '') == 'Ampliconlength':
                         neighbor = 1
                         counter += 1
 
-                elif counter == 6:
+                elif counter == 7:
                     # Look for Amplicon %GC
                     if item.replace(' ', '') == 'Amplicon\r\n%GC':
                         neighbor = 1
                         counter += 1
 
-                elif counter == 7:
+                elif counter == 8:
                     break
 
-            if len(data) != 16:
+            if len(data) != 17:
                 flash('The uploaded file(s) are not in the correct format', 'alert-warning')
                 return render_template('psq/form.html')
             output.append(data)
@@ -151,39 +159,40 @@ def psq():
     writer = csv.writer(dest)
 
     # Print header
-    writer.writerow( ["NGS#", "Assay ID", "Length", "Tm", "GC%", "Amplicon GC%",
+    writer.writerow( ["NGS#", "Gene", "Assay ID", "Length", "Tm", "GC%", "Amplicon GC%",
                       "Amplicon size", "Assay Design Score", "Amplicon coordinates (GRCm38/mm10)",
                       "Strand", "# CpG", "# SNP", "Primer ID", "Primer Sequences", "Ta",
                       "Mg2+", "Note"] )
 
     # Loop through output
-    row = [''] * 17
+    row = [''] * 18
     for file in output:
-        row[1] = file[0]
-        row[2] = file[3]
+        row[1] = file[1]
+        row[2] = file[0]
         row[3] = file[4]
         row[4] = file[5]
-        row[5] = file[15]
-        row[6] = file[14]
-        row[7] = file[1]
-        row[12] = file[0] + 'FP'
-        row[13] = file[2]
+        row[5] = file[6]
+        row[6] = file[16]
+        row[7] = file[15]
+        row[8] = file[2]
+        row[13] = file[0] + 'FP'
+        row[14] = file[3]
         writer.writerow( row )
         row = [""] * 17
-        row[2] = file[7]
         row[3] = file[8]
         row[4] = file[9]
-        row[12] = file[0] + 'RP'
-        row[13] = file[6]
+        row[5] = file[10]
+        row[13] = file[0] + 'RP'
+        row[14] = file[7]
         writer.writerow(row)
         row = [""] * 17
-        row[2] = file[11]
         row[3] = file[12]
         row[4] = file[13]
-        row[12] = file[0] + seq_primer
-        row[13] = file[10]
+        row[5] = file[14]
+        row[13] = file[0] + seq_primer
+        row[14] = file[11]
         writer.writerow(row)
-        row = [""] * 17
+        row = [""] * 18
 
     # Make response
     response = make_response(dest.getvalue())
