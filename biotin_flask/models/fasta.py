@@ -35,18 +35,23 @@ class Fasta:
                 prev_seq = ''
                 for line in file_h.readlines():
                     line = line.rstrip()
+                    if not line:
+                        # If the line does not exist, skip to the next line
+                        continue
                     if line[0] == '>':
                         # Add the previous gene
                         if prev_id and prev_seq:
                             if prev_id in self.genes:
                                 raise IOError('')
                             else:
+                                # Assign sequence to gene
                                 self.genes[prev_id] = prev_seq
 
                         # Start the new gene
                         prev_id = line[1:]
                         continue
                     if prev_id:
+                        # Construct sequence
                         prev_seq = prev_seq + line
 
                 # Don't forget to add the last gene
