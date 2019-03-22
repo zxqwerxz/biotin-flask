@@ -28,6 +28,9 @@ def sam_upload():
         POST: Process the form upload and redirect user.
 
     """
+    # General message
+    message = "Oops! An error occurred"
+
     # Quick shortcut method so I don't have to rewrite this code
     def render_form(session_id, samfiles=None, fastafile=None):
         """Render the form associated with this route."""
@@ -92,10 +95,11 @@ def sam_upload():
         if fasta:
             delete_files('sam', session['id'], None, ('.fa', '.fasta'))
             fa = upload(fasta, fasta.filename, 'sam', escape(session['id']))
+            Fasta(fa)
             try:
                 Fasta(fa)
             except:
-                flash(message, 'alert-warning')
+                flash('Unable to load fasta file', 'alert-warning')
                 if not sams:
                     return render_form(session['id'], oldbams, oldfasta)
 

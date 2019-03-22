@@ -3,6 +3,7 @@
 
 from collections import OrderedDict
 import os
+from openpyxl import Workbook
 
 from flask import escape, flash, session, redirect, render_template, request
 from flask import url_for
@@ -11,7 +12,7 @@ from biotin_flask import app
 from biotin_flask.models.disk_io import basename, get_firstfile, list_dir
 from biotin_flask.models.fasta import Fasta
 from biotin_flask.models.pysam_ext import get_all_genes, get_refbase, load_sams
-from biotin_flask.models.stream_io import csv_response, zip_csv_response
+from biotin_flask.models.stream_io import csv_response, zip_csv_response, exl_response, zip_exl_response
 
 __author__ = 'Jeffrey Zhou'
 __copyright__ = 'Copyright (C) 2017, EpigenDx Inc.'
@@ -113,18 +114,23 @@ def sam_browse():
             # Make the universal position container
             positionContainer = OrderedDict({parsed_form['gene']: positions})
 
-            # Get the read bases at the requested coordinated positions
-            readDict = _bam_fetch_positions(bam, positionContainer)
-
             # Handle the fasta file if present
             if badFasta:
                 fasta_seq = None
+                cpg_positionContainer = None
             else:
+                # Get reference sequence from fasta file
                 fasta_seq = _fasta_fetch_positions(fasta, positionContainer)
+                # Get coordinates of CpG sites from fasta file
+                cpg_positionContainer = _fasta_fetch_cpg(fasta, positionContainer)
+
+            # Get the read bases at the requested coordinated positions
+            readDict = _bam_fetch_positions(bam, positionContainer, cpg_positionContainer)
 
             results.append({
                 'sample': basename(bampaths, session['id'])[i],
                 'positions': _flatten_position_container(positionContainer),
+                'cpg_positions': _flatten_position_container(cpg_positionContainer),
                 'reads': readDict,
                 'fasta': fasta_seq
             })
@@ -148,18 +154,33 @@ def sam_browse():
             )
 
         # Output method - CSV
-        if len(bamfiles) == 1:  # Single CSV file, send back a .csv file
-            data = _format_csv_file(results[0])
-            filename = os.path.splitext(results[0]['sample'])[0] + '.csv'
-            return csv_response('result_' + filename, data)
+        if parsed_form['output'] == 'csv':
+            if len(bamfiles) == 1:  # Single CSV file, send back a .csv file
+                data = _format_csv_file(results[0])
+                filename = os.path.splitext(results[0]['sample'])[0] + '.csv'
+                return csv_response('result_' + filename, data)
 
-        else:  # Multiple CSV files, send back a .zip file
+            else:  # Multiple CSV files, send back a .zip file
+                data = {}
+                for result in results:
+                    csvdata = _format_csv_file(result)
+                    filename = os.path.splitext(result['sample'])[0] + '.csv'
+                    data[filename] = csvdata
+                return zip_csv_response('results.zip', data)
+
+        # Output method - Excel
+        if len(bamfiles) == 1:  # Single Excel file, send back a .xlsx file
+            workbook = _format_exl_file(results[0])
+            filename = os.path.splitext(results[0]['sample'])[0] + '.xlsx'
+            return exl_response('result_' + filename, workbook)
+
+        else:  # Multiple Excel files, send back a .zip file
             data = {}
             for result in results:
-                csvdata = _format_csv_file(result)
-                filename = os.path.splitext(result['sample'])[0] + '.csv'
-                data[filename] = csvdata
-            return zip_csv_response('results.zip', data)
+                exl_data = _format_exl_file(result)
+                filename = os.path.splitext(result['sample'])[0] + '.xlsx'
+                data[filename] = exl_data
+            return zip_exl_response('results.zip', data)
 
 
 def _validate_and_parse(form):
@@ -265,7 +286,7 @@ def _get_positions(bam, form):
     return sorted(positions)
 
 
-def _bam_fetch_positions(bam, position_container):
+def _bam_fetch_positions(bam, position_container, cpg_position_container):
     """Construct a table of bases at the requested posistions.
 
     Note 1:
@@ -282,6 +303,7 @@ def _bam_fetch_positions(bam, position_container):
     Parameters:
         bam (AlignmentFile object): The bam file to check.
         position_container (OrderedDict): An ordered dict of position lists.
+        cpg_position_container (OrderedDict): An ordered dict of CpG site position lists.
 
     Returns:
         An OrderedDict of reads of a list of string bases.
@@ -291,14 +313,21 @@ def _bam_fetch_positions(bam, position_container):
         'geneB' = [ 1, 2]
     }
 
+    Example_Cpg_Position_Container_Input = {
+        'geneA' = [4,12]
+        'geneB' = [6,18]
+    }
+
     Example_Output = {
         'read1' = {
             'strand': False,
             'bases': [ 'A', 'C', '', '']
+            'cpg': ['C','T','','T']
         },
         'read2' = {
             'strand': True,
             'bases': [ '', '', 'T', 'G']
+            'cpg': ['T','T','C','']
         }
     }
 
@@ -307,24 +336,42 @@ def _bam_fetch_positions(bam, position_container):
     total_positions = 0
     for positions in position_container.values():
         total_positions = total_positions + len(positions)
+    total_cpg_positions = 0
+    for cpg_positions in cpg_position_container.values():
+        total_cpg_positions = total_cpg_positions + len(cpg_positions)
 
-    # Begin loop
+    # Begin looping positions
     reads = OrderedDict()
     buffer_front = 0
     buffer_back = total_positions
+    cpg_buffer_front = 0
+    cpg_buffer_back = total_cpg_positions
     for gene, positions in position_container.items():
+        # Get cpg positions
+        cpg_pos = cpg_position_container[gene]
+        # Buffer so that reads have no alignment ([''] * buffer_back) for other genes in the position_container
         buffer_back = buffer_back - len(positions)
+        cpg_buffer_back = cpg_buffer_back - len(cpg_pos)
+        # Define start and end coordinates for searching the read
         start, end = min(positions), max(positions)
+        # Iterate through all the reads
         for read in bam.fetch(gene, start, end + 1):
             reads[read.query_name] = {
                 'strand': read.is_reverse,
-                'bases': [''] * buffer_front
+                'bases': [''] * buffer_front,
+                'cpg' : [''] * cpg_buffer_front
             }
             for pos in positions:
                 reads[read.query_name]['bases'].append(get_refbase(read, pos))
+                if pos in cpg_pos:
+                    reads[read.query_name]['cpg'].append(get_refbase(read, pos))
             if buffer_back:
                 reads[read.query_name]['bases'].append([''] * buffer_back)
+            if cpg_buffer_back:
+                reads[read.query_name]['cpg'].append([''] * cpg_buffer_back)
+        # Buffer so that reads have no alignment ([''] * buffer_front) for other genes in the position_container
         buffer_front = len(positions)
+        cpg_buffer_front = len(cpg_pos)
     return reads
 
 
@@ -343,6 +390,25 @@ def _fasta_fetch_positions(fasta, position_container):
     for gene, positions in position_container.items():
         for pos in positions:
             result.append(fasta.genes[gene][pos].upper())
+    return result
+
+
+def _fasta_fetch_cpg(fasta, position_container):
+    """Fetch the requested positions of CpG sites from fasta file
+
+    Parameters:
+        fasta (Fasta object): Fasta file to search.
+        position_container (OrderedDict): An ordered dict of position lists.
+
+    Returns:
+        An ordered dict of CpG position lists.
+    """
+    result = OrderedDict()
+    for gene, positions in position_container.items():
+        result[gene] = []
+        for pos in positions:
+            if fasta.genes[gene][pos:pos+2].upper() == 'CG':
+                result[gene].append(pos)
     return result
 
 
@@ -446,3 +512,80 @@ def _format_csv_file(data):
             strand = '+'
         result.append([strand, read] + d['bases'])
     return result
+
+def _format_exl_file(data):
+    """Format data into excel file ready to be print.
+
+    Arguments:
+        data (dict): Data to format. Note that positions are 0-based.
+
+        data_example = {
+            'sample': 'sample1.bam',
+            'positions': ['GeneA:0', 'GeneA:1', 'GeneB:0', 'GeneB:1'],
+            'reads': {
+                'read1' = {
+                    'strand': False,
+                    'bases': [ 'A', 'C', '', '']
+                    'cpg': ['C','C','','']
+                },
+                'read2' = {
+                    'strand': True,
+                    'bases': [ '', '', 'T', 'G']
+                    'cpg': ['','','T','C']
+                }
+            },
+            'fasta': ['A', 'C', 'T', 'G']
+        }
+
+    Returns:
+        An openpyxl Workbook object ready to be sent. See example.
+
+        Sheet1_example = [
+            ['', 'Gene:', 'GeneA', 'GeneA', 'GeneB', 'GeneB'],
+            ['Read Strand', 'Read ID', 0, 1, 0, 1],
+            ['', 'Fasta Sequence', 'A', 'C', 'T', 'G'],
+            ['+', 'read1', 'A', 'C', '', ''],
+            ['+', 'read1', '', '', 'T', 'G']
+        ]
+
+        Sheet2_example = [
+            ['', 'Gene:', 'GeneA', 'GeneA', 'GeneB', 'GeneB'],
+            ['Read Strand', 'Read ID', 0, 3, 0, 6],
+            ['+', 'read1', 'C', 'C', '', ''],
+            ['+', 'read1', '', '', 'T', 'C']
+        ]
+
+        ]
+
+    """
+    # Make output excel file
+    output = Workbook()
+    output_sheet = output.active
+
+    # Write to the first sheet
+    genes, positions = _split_and_add1(data['positions'])
+    output_sheet.append(['', 'Gene:'] + genes)
+    output_sheet.append(['Read Strand', 'Read ID'] + positions)
+    if data['fasta']:
+        output_sheet.append(['', 'Fasta Sequence'] + data['fasta'])
+    for read, d in data['reads'].items():
+        if d['strand']:
+            strand = '-'
+        else:
+            strand = '+'
+        output_sheet.append([strand, read] + d['bases'])
+
+    # Make the second sheet (CpG Sites)
+    output_cpg = output.create_sheet('CpG Sites')
+
+    # Write to the second sheet (CpG Sites)
+    genes, cpg_positions = _split_and_add1(data['cpg_positions'])
+    output_cpg.append(['', 'Gene:'] + genes)
+    output_cpg.append(['Read Strand', 'Read ID'] + cpg_positions)
+    for read, d in data['reads'].items():
+        if d['strand']:
+            strand = '-'
+        else:
+            strand = '+'
+        output_cpg.append([strand, read] + d['cpg'])
+    return output

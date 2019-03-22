@@ -125,6 +125,70 @@ def zip_csv_response(filename, data, delimiter=','):
     return zip_response(filename, temp_manager.filelist, csvnames)
 
 
+def exl_response(filename, workbook):
+    """Return a .xlsx file as a Flask response.
+
+        Parameters:
+            filename (str): The filename to send back to the user.
+            workbook (Object): openpyxl Workbook to be saved as temporary file.
+
+            data_input_example = [
+                ['Hello', 'World', 'This', 'is', 'first', 'row'],
+                ['This', 'Is', 'The', 'Second', 'Row'],
+                ['Third', 'Row', 'Here']
+            ]
+
+        Returns:
+            A Flask response (attachment).
+
+    """
+    temp_manager = TemporaryFileManager()
+
+    # Write Excel file
+    exl_path = os.path.join(tempfile.gettempdir(), filename)
+    workbook.save(exl_path)
+
+    # Mark the filepath for destruction after it's done
+    temp_manager.add_file(exl_path)
+    print exl_path
+
+    # Make Flask Response
+    return send_file(
+        exl_path,
+        attachment_filename=filename,
+        as_attachment=True
+    )
+
+
+def zip_exl_response(filename, data):
+    """Return a .zip file of multiple csv files as a Flask response.
+
+    Parameters:
+        filename (str): The filename to send back to the user.
+        data (dict): Data to write to csv (see example).
+
+        data_input_example = {
+            'file1.xlsx': Workbook (Object),
+            'file2.xlsx': Workbook (Object)
+        }
+
+    Returns:
+        A Flask response (attachment).
+
+    """
+    temp_manager = TemporaryFileManager()
+
+    # Write Excel files
+    exlnames = []
+    for exlname, workbook in data.items():
+        exlpath = os.path.join(tempfile.gettempdir(), exlname)
+        workbook.save(exlpath)
+        temp_manager.add_file(exlpath)
+        exlnames.append(exlname)
+
+    # Write and send ZIP file
+    return zip_response(filename, temp_manager.filelist, exlnames)
+
 ###############################################################################
 # Temporary File Class
 ###############################################################################
@@ -152,4 +216,4 @@ class TemporaryFileManager:
         """Destruct the TemporaryFileManager object and delete files."""
         for filepath in self.filelist:
             if os.path.isfile(filepath):
-                os.remove(file)
+                os.remove(filepath)
