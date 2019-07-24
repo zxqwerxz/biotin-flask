@@ -51,7 +51,7 @@ def psq():
         filename = secure_filename(file.filename)
         filefront, extension = os.path.splitext(filename)
         if not extension == '.html':
-            flash('Only .html files are allowed.', 'alert-warning')
+            flash('Whoops! ' + filename + ' is not in .html format!', 'alert-warning')
             return render_template('psq/form.html')
 
         # Check if 'FS' or 'RS' is in the file name
@@ -147,7 +147,7 @@ def psq():
                     break
 
             if len(data) != 17:
-                flash('The uploaded file(s) are not in the correct format', 'alert-warning')
+                flash('The uploaded file ' + secure_filename(file.filename) + ' is not in the correct format', 'alert-warning')
                 return render_template('psq/form.html')
             output.append(data)
         except:
