@@ -61,7 +61,6 @@ def epic():
 
     try:
         stream = io.StringIO(f[0].stream.read().decode('utf-8-sig'), newline=None)
-        print(stream)
         csv_reader = csv.reader(stream)
     except:
         flash('Unable to read csv file.', 'alert-warning')
