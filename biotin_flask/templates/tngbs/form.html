@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}tNGBS Data Formatter | Biotin-Flask{% endblock %}
+
+{% block body %}
+
+<!-- Breadcrumb Trail-->
+<ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="{{ url_for('index') }}">Home</a></li>
+    <li class="breadcrumb-item"><a href="{{ url_for('misc') }}">Miscellaneous</a></li>
+    <li class="breadcrumb-item active">tNGBS Data Formatter</li>
+</ol>
+<!-- End Breadcrumbs -->
+
+<div class="row">
+    <div class="col-lg-12">
+
+        <h1>tNGBS Final Data Formatter [NOT FINISHED]</h1>
+
+        <ul style="font-style: italic">
+            <li>Version 0.01 (08-04-2019)</li>
+            <li>Input: raw tNGBS data (a .csv file) that has values for percent methylation (see example <a href="">here</a>) and read coverage
+                (see example <a href="">here</a>), plus EpigenDx's final format for tNGBS data (a .xslx file, see example <a href="">here</a>)
+                <br>
+                Output: EpigenDx's final data in the correct format (a .xslx file, see example <a href="">here</a>)</li>
+        </ul>
+        <hr>
+        <form role="form" action="{{ url_for('tngbs') }}" method="post" enctype="multipart/form-data">
+            <h3>Required Parameters:</h3>
+
+            <div class="form-group">
+                <label>Raw data .csv File:</label> <span style="color:red;">*required</span>
+                <input class="form-control" type="file" name="raw" multiple>
+                <p style="margin-top:10px;">Try selecting multiple .csv files to upload</p>
+                <p style="font-size:70%">Note: This form is not compatible with Internet Explorer 9 and earlier versions</p>
+            </div>
+
+            <div class="form-group">
+                <label>EpigenDx Format .xlsx File:</label> <span style="color:red;">*required</span>
+                <input class="form-control" type="file" name="format" multiple>
+                <p style="margin-top:10px;">Only accepts one file</p>
+            </div>
+
+            <hr>
+
+            <button class="btn btn-primary btn-lg" type="submit">Submit</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

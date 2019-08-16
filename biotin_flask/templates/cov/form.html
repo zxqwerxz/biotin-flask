@@ -5,9 +5,9 @@
 
 <!-- Breadcrumb Trail-->
 <ol class="breadcrumb">
-  <li><a href="{{ url_for('index') }}">Home</a></li>
-    <li><a href="{{ url_for('misc') }}">Miscellaneous</a></li>
-  <li class="active">NGS FASTA Match</li>
+    <li class="breadcrumb-item"><a href="{{ url_for('index') }}">Home</a></li>
+    <li class="breadcrumb-item"><a href="{{ url_for('misc') }}">Miscellaneous</a></li>
+    <li class="breadcrumb-item active">NGS FASTA Match</li>
 </ol>
 <!-- End Breadcrumbs -->
 
@@ -17,7 +17,7 @@
     <h1>NGS FASTA Match</h1>
 
     <ul style="font-style: italic">
-        <li>Version 0.01 (01-20-2018)</li>
+        <li>Version 0.02 (08-15-2019)</li>
         <li>Takes NGS data from multiple samples and matches them to a list of FASTA IDs in a reference csv file</li>
         <li>The NGS data must be converted from .cov to .csv files</li>
         <li>Sample <a href="{{ url_for('static', filename='img/cov_input_format.png') }}">input format</a>,
@@ -34,7 +34,7 @@
 			<input class="form-control" type="file" name="input" multiple>
             <p style="margin-top:10px;color:red;">The file names should begin with the Sample ID
             ("sample_id.details.csv")</p>
-            <p style="margin-top:10px;">Try selecting multiple .xlsx files to upload</p>
+            <p style="margin-top:10px;">Try selecting multiple .csv files to upload</p>
             <p style="font-size:70%">Note: The multiple select feature is not compatible with Internet Explorer 9 and earlier versions</p>
 	    </div>
 
@@ -45,7 +45,7 @@
 
         <hr>
 
-	    <button class="btn btn-default btn-lg" type="submit">Submit</button>
+	    <button class="btn btn-primary btn-lg" type="submit">Submit</button>
     </form>
 </div>
 </div>
