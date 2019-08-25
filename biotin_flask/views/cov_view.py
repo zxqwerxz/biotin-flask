@@ -35,6 +35,7 @@ def cov():
     # Obtain files from the form
     f = request.files.getlist('input')
     ref = request.files.getlist('reference')
+    less_thirty = request.form.get('less-thirty')
 
     # Throw error if one of the required files are missing
     if not f[0]:
@@ -109,7 +110,7 @@ def cov():
             try:
                 fasta_id.append(row[0] + "." + row[1])
                 # If coverage is below 30, get rid of data
-                if int(row[4]) + int(row[5]) < 30:
+                if int(row[4]) + int(row[5]) < 30 and less_thirty == 'Yes':
                     reads.append("-")
                     methylation.append("-")
                 else:
@@ -119,7 +120,7 @@ def cov():
                 # If the file is space delimited and not comma delimited
                 row = row[0].split()
                 fasta_id.append(row[0] + "." + row[1])
-                if int(row[4]) + int(row[5]) < 30:
+                if int(row[4]) + int(row[5]) < 30 and less_thirty == 'Yes':
                     reads.append("-")
                     methylation.append("-")
                 else:
