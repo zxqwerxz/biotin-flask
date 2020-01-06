@@ -39,3 +39,4 @@ import biotin_flask.views.epic_view
 import biotin_flask.views.bed_view
 import biotin_flask.views.cpg_view
 import biotin_flask.views.tngbs_view
+import biotin_flask.views.fasta_view

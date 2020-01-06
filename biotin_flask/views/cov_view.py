@@ -49,8 +49,12 @@ def cov():
     for file in f:
         filename = secure_filename(file.filename)
         filefront, extension = os.path.splitext(filename)
+        if extension == '.cov':
+            # Rename all file extensions to .csv
+            extension = '.csv'
+            file.filename = filefront + extension
         if not extension == '.csv':
-            flash('Only .csv and .csv files are allowed.', 'alert-warning')
+            flash('Only .cov and .csv files are allowed.', 'alert-warning')
             return render_template('cov/form.html')
 
     # Validate reference file
@@ -84,9 +88,10 @@ def cov():
     writer.writerow(["Sample ID"] + fasta_ref)
 
     # Loop through samples
-    reads_data = []
-    sample_id = []
-    for file in f:
+    reads_data = [] # sorted list of read data, according to fasta_ref
+    methylation_data = [] # sorted list of methylation data, according to fasta_ref
+    sample_id = [] # list of sample IDs (EPDIndex...)
+    for i, file in enumerate(f):
         # If EPDIndex is in the name of the file, put that as the sample ID instead of the whole name of the file
         if "EPDIndex" in secure_filename(file.filename):
             for part in secure_filename(file.filename).split("."):
@@ -103,9 +108,9 @@ def cov():
         except:
             flash('Unable to read csv file.', 'error')
             return render_template('cov/form.html')
-        fasta_id = []
-        methylation = []
-        reads = []
+        fasta_id = [] # list of all FASTA IDs in the data file
+        methylation = [] # methylation data of the FASTA IDs in the data file
+        reads = [] # read data of the FASTA IDs in the data file
         for row in reader:
             try:
                 fasta_id.append(row[0] + "." + row[1])
@@ -127,21 +132,26 @@ def cov():
                     reads.append(int(row[4]) + int(row[5]))
                     methylation.append(row[3])
         # Sort the list
-        methylation_data = []
+        methylation_data.append([]) # append an empty list which can be filled in
+        reads_data.append([]) # append an empty list which can be filled in
         for element in fasta_ref:
             try:
                 indx = fasta_id.index(element)
-                methylation_data.append(methylation[indx])
-                reads_data.append(reads[indx])
+                methylation_data[i].append(methylation[indx])
+                reads_data[i].append(reads[indx])
             except:
-                methylation_data.append("-")
-                reads_data.append("-")
-        # Write to the output
-        writer.writerow([sample_id[-1]] + methylation_data)
+                methylation_data[i].append("-")
+                reads_data[i].append("-")
 
-    writer.writerow('')
+    # Sort by sample ID
+    sample_id, methylation_data, reads_data = zip(*sorted(zip(sample_id, methylation_data, reads_data)))
+
+    # Write data to spreadsheet
     for i in xrange(len(f)):
-        writer.writerow([sample_id[i]] + reads_data[i*len(methylation_data):(i+1)*len(methylation_data)])
+        writer.writerow([sample_id[i]] + methylation_data[i])
+    writer.writerow(["Sample ID"] + fasta_ref)
+    for i in xrange(len(f)):
+        writer.writerow([sample_id[i]] + reads_data[i])
 
     response = make_response(dest.getvalue())
     response.headers["Content-Disposition"] = "attachment; filename=results.csv"

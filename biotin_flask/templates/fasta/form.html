@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head></head>
+{% extends "base.html" %}
+{% block title %}Gene List to FASTA File | Biotin-Flask{% endblock %}
+
+{% block body %}
+
+<!— Breadcrumb Trail—>
+<ol class=breadcrumb>
+	<li class=breadcrumb-item><a href="{{ url_for('index') }}">Home</a></li>
+	<li class=breadcrumb-item><a href="{{ url_for('misc') }}">Miscellaneous</a></li>
+	<li class=breadcrumb-item active>Gene List to FASTA File</li>
+</ol>
+<!— End Breadcrumbs —>
+
+<div class=row>
+	<div class=col-lg-12>
+
+	<h1>Gene List to FASTA File</h1>
+		
+		<ul style="font—style: italic">
+			<li><em>Version 0.01 (12-30-2019)</em></li>
+			<li><em>Input: a list of official gene names, Output: A FASTA file with gene names and gene sequences</em></li>
+		</ul>
+
+		<h2>How This Program Works</h2>
+		<ol>
+			<li>The program uses the NCBI Entrez API (ESearch) to search the NCBI Nucleotide database for each gene name. The program includes "RefSeqGene" as a keyword in the search terms because RefSeqGene sequences contain a 5kb upstream and 2kb downstream flanking sequence</li>
+			<li>The program uses the NCBI Entrez API (EFetch) to download a FASTA file with all of the gene names and sequences</li>
+            <li>The program changes all the headers in the FASTA file to the format: ">gene:chromosome.coordinate-coordinate"</li>
+		</ol>
+		<font color="green">Notice: Most RefSeqGene entries include a 5kb upstream and 2kb downstream flanking sequence, but this is not true of all RefSeqGene entries. If assays are designed in the flanking regions, it is best to check whether the FASTA file includes those assays.</font>
+		
+	<hr>
+		<form role="form" action="{{ url_for('fasta') }}" method="post" enctype="multipart/form-data">
+
+		<h3> Required Parameters:</h3>
+
+		<div class="form-group">
+			<label>Species</label><span style=color:red;>*required</span>
+            E.g. "Human" or "Mouse"
+            <input class="form-control" type="text" name="species">
+		</div>
+
+		<div class="form-group">
+			<label>Gene List</label><span style=color:red;>*required</span>
+            Separate by line-break
+			<textarea class="form-control" name="gene" cols="40" rows="5"></textarea>
+		</div>
+
+        <div class="form-group">
+			<label>Name of Output FASTA File</label> Default is "reference_genes.fasta"
+			<input class="form-control" type="text" name="species">
+		</div>
+
+		<hr>
+			<button class="btn btn-primary btn-lg" type=submit>Submit</button>
+		</form>
+</div>
+</div>
+{% endblock %}
+</html>

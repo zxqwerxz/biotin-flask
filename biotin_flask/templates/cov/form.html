@@ -17,9 +17,9 @@
     <h1>NGS FASTA Match</h1>
 
     <ul style="font-style: italic">
-        <li>Version 0.02 (08-15-2019)</li>
+        <li>Version 0.03 (01-06-2020)</li>
         <li>Takes NGS data from multiple samples and matches them to a list of FASTA IDs in a reference csv file</li>
-        <li>The NGS data must be converted from .cov to .csv files</li>
+        <li>This version takes both .cov and .csv data files as input</li>
         <li>Sample <a href="{{ url_for('static', filename='img/cov_input_format.png') }}">input format</a>,
             sample <a href="{{ url_for('static', filename='img/cov_reference_format.png') }}">reference format</a>
             and sample <a href="{{ url_for('static', filename='img/cov_output_format.png') }}">output format</a>.
@@ -30,7 +30,7 @@
         <h3>Required Parameters:</h3>
 
         <div class="form-group">
-			<label>NGS data (.csv files):</label> <span style="color:red;">*required</span>
+			<label>NGS data (.csv or .cov files):</label> <span style="color:red;">*required</span>
 			<input class="form-control" type="file" name="input" multiple>
             <p style="margin-top:10px;color:red;">The file names should begin with the Sample ID
             ("sample_id.details.csv")</p>

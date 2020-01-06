@@ -19,7 +19,7 @@ __credits__ = ['Eric Zhou']
 __version__ = '0.0.1'
 __status__ = 'Production'
 
-Entrez.email = 'eyzhou@college.harvard.edu'
+Entrez.email = 'zhou.eric.y@gmail.com'
 
 @app.route('/misc/bed', methods=['GET', 'POST'])
 def bed():
