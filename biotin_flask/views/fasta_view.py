@@ -6,7 +6,7 @@ and outputs a FASTA file with every gene and its sequence.
 Default sequence includes 5kb upstream and 2kb downstream flanking sequence.
 """
 
-import os, io, csv, StringIO, zipfile
+import os, io, csv, StringIO, zipfile, re
 from flask import render_template, request, flash, make_response, send_file
 from werkzeug import secure_filename
 from Bio import Entrez
@@ -21,6 +21,7 @@ __version__ = '0.0.1'
 __status__ = 'Production'
 
 Entrez.email = 'zhou.eric.y@gmail.com'
+API_KEY = 'c9208f5fd7eba42663b68a994027be7bb408'
 
 @app.route('/misc/fasta', methods=['GET', 'POST'])
 def fasta():
@@ -42,11 +43,15 @@ def fasta():
     species = request.form.get('species')
     gene = request.form.get('gene').splitlines()
 
-    # Obtain FASTA file from NCBI
+    # Obtain FASTA file from NCBI, list of NCBI Gene IDs and size of flanking sequences
     id_list, gene_success = uid(species, gene)
-    document = fetch(id_list, gene_success)
+    document, gene_id, flanking = fetch(id_list, gene_success)
+
+    # Get genomic coordinates of the FASTA file
+    coord = coordinates(gene_id, flanking)
 
     # Modify the FASTA file
+    # TODO: Confirm that coordinates are correct and then write code to modify FASTA file
 
     return render_template('fasta/form.html')
 
@@ -69,7 +74,8 @@ def uid(species, gene):
 
     for gene in gene:
         try:
-            response = Entrez.esearch(db='nucleotide', term=species+'[Organism] '+gene+'[GENE] RefSeqGene[KYWD]', )
+            response = Entrez.esearch(db='nucleotide', term=species+'[Organism] '+gene+'[GENE] RefSeqGene[KYWD]',
+                                      api_key=API_KEY)
             doc = minidom.parseString(response.read())
 
             try:
@@ -91,7 +97,7 @@ def fetch(id_list, gene_success):
     Determines size of flanking regions, just in case they are not 5kb upstream and 2kb downstream as by default.
 
     :param
-        id_list:        (List, string) a list of unique IDs corresponding to the gene names
+        id_list:        (List, string) a list of NCBI unique IDs corresponding to the gene names
         gene_success    (List, string) a list of gene names that were successfully searched
 
     :return:
@@ -100,33 +106,91 @@ def fetch(id_list, gene_success):
         flanking:       (List, List, string) a list of [upstream, downstream] flanking sizes for each gene
     """
 
-    local = []
+    flanking = []
+    ref_list = []
 
-    try:
-        # Fetch the FASTA file
-        document = Entrez.efetch(db='nucleotide', id=id_list, rettype='fasta', retmode='text')
-        # Fetch the full record
-        detail = Entrez.efetch(db='nucleotide', id=id_list, rettype='native', retmode='xml')
-        doc = minidom.parseString(detail.read())
-        # Grab the gene IDs, e.g. NG_007392
-        ref_list = doc.getElementsByTagName('GBSeq_locus').firstChild.nodeValue
-        # Grab the lengths of the entries
-        length = doc.getElementsByTagName('GBSeq_length').firstChild.nodeValue
-        # Get the local coordinates of the gene
-        for i, gene in doc.getElementsByTagName('GBSeq'):
-            for element in gene.getElementsByTagName('GBFeature_key'):
-                if element.firstChild.nodeValue == 'gene' and gene_success[i] \
-                        in element.parentNode.getElementsByTagName('GBQualifier_value').firstChild.nodeValue:
-                    # Coordinates usually come in this format '####..####' or 'complement(join(####..####,####..####))'
-                    # But since genes are not split up, it should only come in this format '####..####'
-                    local.append(element.nextSibling.firstChild.nodeValue.split('..'))
-                    break
+    # Fetch the FASTA file
+    document = Entrez.efetch(db='nucleotide', id=id_list, rettype='fasta', retmode='text', api_key=API_KEY)
+    # Fetch the full record
+    detail = Entrez.efetch(db='nucleotide', id=id_list, rettype='gb', retmode='xml', api_key=API_KEY)
+    doc = minidom.parseString(detail.read())
+    # Grab the lengths of the entries
+    length = list(map(int,getListOfValues(doc.getElementsByTagName('GBSeq_length'))))
+    # Get the local coordinates of the gene
+    i = 0 # Set up counter because cannot enumerate over Node List :(
+    for gene in doc.getElementsByTagName('GBSeq'):
+        for element in gene.getElementsByTagName('GBFeature_key'):
 
-        # TODO: figure out how to get a list of values with getElementsByTagName
-        print ref_list
+            nodeList = getListOfValues(element.parentNode.getElementsByTagName('GBQualifier_value'))
 
-    except:
-        flash('Something went wrong when NCBI was fetching the FASTA file', 'alert')
-        return render_template('fasta/form.html')
+            # If the feature type is a gene
+            # And if one of the sibling nodes "GBQualifier_value" contains the name of the gene
+            if element.firstChild.nodeValue == 'gene' and gene_success[i] in nodeList:
 
-    return document, ref_list
+                # Get the Gene ID
+                for nodeValue in nodeList:
+                    if 'GeneID:' in nodeValue:
+                        ref_list.append(nodeValue.split(':')[1])
+                        break
+
+                # Coordinates usually come in this format '####..####' or 'join(####..####,####..####)'
+                # But since genes are not split up, it should only come in this format '####..####'
+                # Or the complement 'complement(####..####)'
+                coordinates = element.parentNode.getElementsByTagName('GBFeature_location')[0].\
+                    firstChild.nodeValue
+                if '(' in coordinates:
+                    # RegEx to search for '(####..####)'
+                    start, end = list(map(int,re.search(r'\(\d*\.\.\d*\)', coordinates).group(1).split('..')))
+                else:
+                    start,end = list(map(int,coordinates.split('..')))
+                flanking.append((start-1,length[i]-end))
+                break
+        i += 1
+
+    return document, ref_list, flanking
+
+def coordinates(ref_list, flanking):
+    """
+    Fetches list of genomic coordinates of the FASTA files given NCBI gene IDs and size of flanking sequences
+
+    :param
+        ref_list:       (List, String) List of NCBI Gene ID Strings to Search NCBI Gene
+        flanking:       (List, Tuple, Int) List of size of (left, right) flanking sequences on the FASTA files
+
+    :return:
+        coordinates:    (List, Tuple, String) List of genomic coordinates for each of the NCBI Gene IDs
+    """
+
+    coordinates = []
+    detail = Entrez.efetch(db='gene', id=ref_list, retmode='xml', api_key=API_KEY)
+    doc = minidom.parseString(detail.read())
+    i = 0 # Can't enumerate over nodeList so setting counter here
+    for gene in doc.getElementsByTagName('Entrezgene_locus'):
+        # Assuming that the Reference Coordinates are in the first <Gene-commentary>
+        # The chromosome number should be in "Chromosome # Reference GRCh38.p13 Primary Assembly"
+        chr = gene.getElementsByTagName('Gene-commentary_label')[0].firstChild.nodeValue.split(' ')[1]
+        start = int(gene.getElementsByTagName('Seq-interval_from')[0].firstChild.nodeValue) - flanking[i][0]
+        end = int(gene.getElementsByTagName('Seq-interval_to')[1].firstChild.nodeValue) + flanking[i][1]
+        if chr and start and end:
+            coordinates.append('chr'+chr+':'+str(start)+'-'+str(end))
+        else:
+            coordinates.append('')
+        i += 1
+
+    return coordinates
+
+def getListOfValues(nodeList):
+    """
+    Takes a DOM Node List Object and returns a list of their Node values.
+
+    :param
+        nodeList:       (Node List) a DOM Node List object
+    :return:
+        valueList:      (List, String) a list of values inside the Nodes, usually but not necessarily Strings
+    """
+
+    valueList = []
+    for node in nodeList:
+        valueList.append(node.firstChild.nodeValue)
+
+    return valueList
