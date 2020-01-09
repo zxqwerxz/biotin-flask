@@ -27,7 +27,16 @@
 		<h2>How This Program Works</h2>
 		<ol>
 			<li>The program uses the NCBI Entrez API (ESearch) to search the NCBI Nucleotide database for each gene name. The program includes "RefSeqGene" as a keyword in the search terms because RefSeqGene sequences contain a 5kb upstream and 2kb downstream flanking sequence</li>
+                <ul>
+                    <li>If ESearch does not return any results for a certain gene, you might want to contact
+                        <a href="https://www-ncbi-nlm-nih-gov.ezp-prod1.hul.harvard.edu/refseq/rsg/faq/">RefSeqGene</a>
+                        and request them to add a new gene in their database.</li>
+                </ul>
 			<li>The program uses the NCBI Entrez API (EFetch) to download a FASTA file with all of the gene names and sequences</li>
+                <ul>
+                    <li>A common error is that ESearch returns a result that is not the gene you are looking for.
+                    EFetch will then throw an error if there's a mismatch.</li>
+                </ul>
             <li>The program changes all the headers in the FASTA file to the format: ">gene:chromosome.coordinate-coordinate"</li>
 		</ol>
 		<font color="green">Notice: Most RefSeqGene entries include a 5kb upstream and 2kb downstream flanking sequence, but this is not true of all RefSeqGene entries. If assays are designed in the flanking regions, it is best to check whether the FASTA file includes those assays.</font>
@@ -39,19 +48,19 @@
 
 		<div class="form-group">
 			<label>Species</label><span style=color:red;>*required</span>
-            E.g. "Human" or "Mouse"
+            (E.g. "Human" or "Mouse")
             <input class="form-control" type="text" name="species">
 		</div>
 
 		<div class="form-group">
 			<label>Gene List</label><span style=color:red;>*required</span>
-            Separate by line-break
+            (Separate by line-break)
 			<textarea class="form-control" name="gene" cols="40" rows="5"></textarea>
 		</div>
 
         <div class="form-group">
-			<label>Name of Output FASTA File</label> Default is "reference_genes.fasta"
-			<input class="form-control" type="text" name="species">
+			<label>Name of Output FASTA File</label> (Default is "reference_genes.fasta")
+			<input class="form-control" type="text" name="name">
 		</div>
 
 		<hr>
