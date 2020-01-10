@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block title %}NGS Coordinate Match | Biotin-Flask{% endblock %}
+
+{% block body %}
+
+<!-- Breadcrumb Trail-->
+<ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="{{ url_for('index') }}">Home</a></li>
+    <li class="breadcrumb-item"><a href="{{ url_for('misc') }}">Miscellaneous</a></li>
+    <li class="breadcrumb-item active">NGS Coordinate Match</li>
+</ol>
+<!-- End Breadcrumbs -->
+
+<div class="row">
+<div class="col-lg-12">
+
+    <h1>NGS Coordinate Match</h1>
+
+    <ul style="font-style: italic">
+        <li>Version 0.01 (01-10-2020)</li>
+        <li>Takes NGS data from multiple samples and matches them to a list of genomic coordinates in a reference csv file</li>
+        <li>This version takes both .cov and .csv data files as input</li>
+        <li>Sample <a href="{{ url_for('static', filename='img/coord_reference_format.png') }}">reference format</a>.
+        </li>
+        <li>In order for this program to work, the user must have aligned the FASTQ files to a reference genome
+        that contains the genomic coordinates in the headers (not just the gene names)</li>
+    </ul>
+    <hr>
+    <form role="form" action="{{ url_for('cov') }}" method="post" enctype="multipart/form-data">
+        <h3>Required Parameters:</h3>
+
+        <div class="form-group">
+			<label>NGS data (.csv or .cov files):</label> <span style="color:red;">*required</span>
+			<input class="form-control" type="file" name="input" multiple>
+            <p style="margin-top:10px;color:red;">The file names should begin with the Sample ID
+            ("sample_id.details.csv")</p>
+            <p style="margin-top:10px;">Try selecting multiple .csv files to upload</p>
+            <p style="font-size:70%">Note: The multiple select feature is not compatible with Internet Explorer 9 and earlier versions</p>
+	    </div>
+
+        <div class="form-group">
+            <label>reference excel file (.csv file):</label> <span style="color:red;">*required</span>
+            <input class="form-control" type="file" name="reference" multiple>
+	    </div>
+
+        <div class="form-group">
+            <label>Would you like to filter out CpG sites that have a coverage less than thirty?</label>
+            <select name="less-thirty">
+                <option>No</option>
+                <option>Yes</option>
+            </select>
+	    </div>
+
+        <hr>
+
+	    <button class="btn btn-primary btn-lg" type="submit">Submit</button>
+    </form>
+</div>
+</div>
+{% endblock %}
