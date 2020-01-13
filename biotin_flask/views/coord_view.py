@@ -113,9 +113,17 @@ def coord():
         reads = [] # read data of the genomic coordinates in the data file
         for row in reader:
             try:
-                chr = row[0].split(',')[0].split(' ')[-1]
+                chr = row[0].split('.')[0][-2:]
+
+                if chr[0] == '0':
+                    chr = chr[1]
+                if chr == '23':
+                    chr = 'X'
+                if chr == '24':
+                    chr = 'Y'
                 start = int(row[0].split(':')[1].split('-')[0])
-                cpg_coord = str(start + int(row[1]))
+                # The BED graph uses 0-based start coordinates, so subtract 1
+                cpg_coord = str(start + int(row[1]) - 1)
                 coord_id.append('Chr' + chr + ':' + cpg_coord)
                 # If coverage is below 30, get rid of data
                 if int(row[4]) + int(row[5]) < 30 and less_thirty == 'Yes':
@@ -128,10 +136,18 @@ def coord():
                 # If the file is space delimited and not comma delimited
                 row = row[0].split()
 
-                chr = row[0].split(',')[0].split(' ')[-1]
+                chr = row[0].split('.')[0][-2:]
+                if chr[0] == '0':
+                    chr = chr[1]
+                if chr == '23':
+                    chr = 'X'
+                if chr == '24':
+                    chr = 'Y'
                 start = int(row[0].split(':')[1].split('-')[0])
-                cpg_coord = str(start + int(row[1]))
+                # The BED graph uses 0-based start coordinates, so subtract 1
+                cpg_coord = str(start + int(row[1]) - 1)
                 coord_id.append('Chr' + chr + ':' + cpg_coord)
+                print 'Chr' + chr + ':' + cpg_coord
                 if int(row[4]) + int(row[5]) < 30 and less_thirty == 'Yes':
                     reads.append("-")
                     methylation.append("-")
